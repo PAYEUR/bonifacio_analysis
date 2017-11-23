@@ -22,10 +22,11 @@ def perdelta(start, end, delta):
     return time_list
 
 
-# files and stream manager functions
+# -----------------------------------------------------------------------------------
+# controller 1 files and stream manager functions
 def create_three_d_stream(*files):
     """
-    :param files: string, path of file
+    :param files: one or many strings. Each string is the name of file path
     :return: obspy.Stream. Each file is a stream.trace
     """
     st = Stream()
@@ -35,9 +36,14 @@ def create_three_d_stream(*files):
 
 
 def create_streams_dict(mother_repository, stations_dict, timestamps):
-    """return a dict of streams:
-        :key : name of station and timestamp
-        :value : obspy.Stream for the given hour and station. st.trace[0]: Z, st.trace[1]: N and st.trace[2]: E
+    """
+    :param mother_repository: string, path of mother repository
+    :param stations_dict: dict, stations parameters
+    :param timestamps: list of timestamps given as strings
+    :return a dict of streams:
+        :key : string, name of station and timestamp
+        :value : obspy.Stream for the given hour and station.
+                 st.trace[0]: Z, st.trace[1]: N and st.trace[2]: E
     """
     streams = dict()
     for k, v in stations_dict.items():
@@ -52,7 +58,7 @@ def create_streams_dict(mother_repository, stations_dict, timestamps):
 
 def file_truple(file_path):
     """
-    :param file_path: path of the repository
+    :param file_path: string, path of the repository
     :return: tuple of 3 stings: name of Z, N and E data files
     """
     file1 = file_path + "C00" + ".SAC"
@@ -61,10 +67,37 @@ def file_truple(file_path):
     return file1, file2, file3
 
 
+# -----------------------------------------------------------------------------------
+# controller 1 files and stream manager functions
+def create_path(mother_repository, stations_dict, station, timestamp, direction):
+    """
+
+    :param mother_repository: string, path of mother repository
+    :param stations_dict: dict, stations parameters
+    :param station: 'SUT' or 'REF', key of station_dict
+    :param timestamp: string, timestamp
+    :param direction: 'Z', 'N' or 'E'
+    :return:
+        string, path of corresponding file
+    """
+    if direction == 'Z':
+        index = "00"
+    elif direction == 'N':
+        index = '01'
+    elif direction == 'E':
+        index = '02'
+
+    return f"{mother_repository}/{stations_dict[station][0]}/" \
+           f"{timestamp}.AG.{stations_dict[station][1]}.00." \
+           f"C{index}.SAC"
+
+
+# -----------------------------------------------------------------------------------
 # spectrogram functions
 def compute_decimated_spectrum(trace, decimal_value):
     """
     :param trace:
+    :param decimal_value: int, beetween 1 and +infinity
     :return: decimate trace and return frequencies and spectrum arrays
     """
     trace.decimate(decimal_value)
@@ -82,19 +115,19 @@ def compute_ratio(numerator, denominator, water_level_ratio):
     """
     :param numerator: stream, above
     :param denominator: stream, below
-    :param water_level_ratio: int, % of water level, <1
+    :param water_level_ratio: float, % of water level, between 0 and 1
     :return: np.array: numerator over denominator modified with water level
     """
-    # TODO: verify water_level_ratio is within 0,1
-    # TODO: verify numerator, denominator are streams
+
     den2 = denominator + water_level_ratio*np.mean(denominator)
     return numerator/den2
 
 
 # controller function
+# TODO: this should become depreciated as controller will be rewritten
 def compute_spectrogram(station_name_with_blank, direction_index, streams, timestamps):
 
-    hours_spectros =[]
+    hours_spectros = []
     for timestamp in timestamps:
         key = station_name_with_blank + timestamp
         p_xx, freqs = compute_decimated_spectrum(streams[key].traces[direction_index], decimal_value=5)

@@ -5,6 +5,7 @@ from obspy import read
 import collect_data.model as model
 from obspy.core.stream import Stream
 from datetime import datetime, timedelta
+import pytest
 
 
 class ModelTest(unittest.TestCase):
@@ -61,7 +62,7 @@ class ModelTest(unittest.TestCase):
         decimal_value = 5
         pxx, frequencies = model.compute_decimated_spectrum(trace2, decimal_value)
         # Caution: trace2 have been overwritten
-        expected_frequencies = np.linspace(0, 100/decimal_value, len(trace2)/2+1)
+        expected_frequencies = np.linspace(0, 100/decimal_value, int(len(trace2)/2+1))
         # Testing frequencies
         np.testing.assert_equal(frequencies, expected_frequencies)
         # Testing PSD of first frequency (related to 'detrend' parameter)
@@ -121,4 +122,32 @@ class PerDeltaTest(unittest.TestCase):
         self.assertEqual(self.time_list[0], '2016.11.06-23.59.59')
         self.assertEqual(self.time_list[-1], '2016.11.13-22.59.59')
 
+# ----------------------------------------------------
+# switching to pytest
+# using pytest-cov
 
+
+@pytest.fixture()
+def mother_repository():
+    return 'data_test/Bruit-de-fond'
+
+
+@pytest.fixture()
+def station_dict():
+    return {'SUT': ['Station-falaise', '570009'],
+            'REF': ['Station-reference', '570014']}
+
+
+@pytest.fixture()
+def timestamp():
+    return '2016.11.06-23.59.59'
+
+
+def test_create_path():
+    assert model.create_path(mother_repository,
+                             station_dict,
+                             'SUT',
+                             timestamp,
+                             'Z') \
+           == "/data_test/Bruit-de-fond" \
+           "Station-falaise/2016.11.06-23.59.59.AG.570009.00.C00.SAC"

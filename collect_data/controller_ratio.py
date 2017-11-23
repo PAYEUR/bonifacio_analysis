@@ -24,7 +24,7 @@ end = datetime(year=2016,
 
 time_list = model.perdelta(start, end, timedelta(hours=1))
 timestamps = time_list
-print("Number of investigated hours: " + str(len(timestamps)))
+print(f"Number of investigated hours: {len(timestamps):.2f}")
 
 
 # --------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ ratios = dict()
 
 for index, direction in enumerate(['Z', 'N', 'E']):
 
-    print("Computing ratio in %s direction..." % (direction,))
+    print(f"Computing ratio in {direction} direction...")
     # computing spectrograms
     sp1, freqs1 = model.compute_spectrogram('SUT' + ' ', index, streams, timestamps)
     sp2, freqs2 = model.compute_spectrogram('REF' + ' ', index, streams, timestamps)
