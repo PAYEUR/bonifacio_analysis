@@ -73,7 +73,7 @@ for index, direction in enumerate(['Z', 'N', 'E']):
 
     picture = ax.pcolorfast(x, y, Z,
                             cmap='jet',
-                            vmin=0, vmax=10,  # linear scaling
+                            vmin=0, vmax=10,  # linear  scaling
                             )
     ax.set_yscale('log')
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
