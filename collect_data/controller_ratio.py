@@ -6,7 +6,9 @@ import numpy as np
 from datetime import datetime, timedelta
 
 mother_repository = 'D:/JBP-Preprog-Recherche/obspy/Bruit-de-fond'
-stations_dict = {'SUT': ['Station-falaise', '570009'], 'REF': ['Station-reference', '570014']}
+stations_dict = {'SUT': ['Station-falaise', '570009'],
+                 'REF': ['Station-reference', '570014']
+                 }
 start = datetime(year=2016,
                  month=11,
                  day=6,
