@@ -4,64 +4,86 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 from datetime import datetime, timedelta
-from matplotlib.ticker import FormatStrFormatter, NullLocator
+from matplotlib.ticker import FormatStrFormatter
+import time
+from obspy import read
 
-mother_repository = 'D:/JBP-Preprog-Recherche/obspy/Bruit-de-fond'
-stations_dict = {'SUT': ['Station-falaise', '570009'],
-                 'REF': ['Station-reference', '570014'],
+# local settings
+# stations_dict = {'SUT': ['Station-falaise', '570009'],
+                 # 'REF': ['Station-reference', '570014'],
+                 # }
+# mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
+
+
+mother_repository = "//SRV51-NETAPP2/Data_RS/Bonifacio/Bonifacio-bdf-definitif"
+stations_dict = {'SUT': ['Falaise_fev2017', '570009'],
+                 'REF': ['Ref_fev2017', '570014'],
                  }
-start = datetime(year=2016,
-                 month=11,
-                 day=6,
+
+results_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/bonifacio_analysis/results"
+
+start = datetime(year=2017,
+                 month=1,
+                 day=31,
                  hour=23,
                  minute=59,
                  second=59)
-end = datetime(year=2016,
-               month=11,
-               day=13,
+
+end = datetime(year=2017,
+               month=2,
+               day=28,
                hour=22,
                minute=59,
                second=59)
 
+
+reference_trace = read("D:/JBP-Preprog-Recherche/Bonifacio_obspy/bonifacio_analysis/data_test/Bruit-de-fond/Station-falaise/2016.11.06-23.59.59.AG.570009.00.C00.SAC")[0]
+
+
 time_list = model.perdelta(start, end, timedelta(hours=1))
+
+# written by hand only for february
+time_list[96] = time_list[95]
 timestamps = time_list
+
+
+
+
 print("Number of investigated hours: " + str(len(timestamps)))
 
 # --------------------------------------------------------------------------------------
 # Script:
+start_time = time.time()
 
-# load all data in one single python dict
-print("Computing streams...")
-streams = model.create_streams_dict(mother_repository, stations_dict, timestamps)
-
-# compute spectrograms
-print("Computing spectrograms:")
 maximum = 0
 spectrograms = dict()
 for station in ['SUT', 'REF']:
-    for index, direction in enumerate(['Z', 'N', 'E']):
+    for direction in ['Z', 'N', 'E']:
 
-        print("Computing %s spectrograms in %s direction..." % (station, direction))
-        sp, freqs = model.compute_spectrogram(station + ' ', index, streams, timestamps)
-        spectrograms[station, direction] = sp, freqs
+        # compute spectrograms
 
-        maximum = max(np.max(sp), maximum)
+        print(f"Computing {station} spectrogram in {direction} direction...")
 
-# computing max amplitude of all spectrograms
-print("Maximal amplitude value: " + str(maximum))
+        sp, freqs = model.compute_spectrogram(timestamps,
+                                              mother_repository,
+                                              stations_dict,
+                                              station,
+                                              direction,
+                                              decimal_value=5,
+                                              reference_trace=reference_trace)
 
-# plotting
-for station in ['SUT', 'REF']:
-    for index, direction in enumerate(['Z', 'N', 'E']):
 
-        title = "%s_%s" % (station, direction)
-        print("Plotting " + title)
+        # TODO: need to compute maximums
+        # maximum = max(np.max(sp), maximum)
+        # computing max amplitude of all spectrograms
+        # print("Maximal amplitude value: " + str(maximum))
 
-        # get data and put it in the right way
-        sp, freqs = spectrograms[station, direction]
-        data = np.transpose(sp)
 
-        # plot spectrograms
+        # plotting
+
+        title = f"{station}_{direction}"
+        print(f"Plotting {title}")
+
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
 
@@ -71,11 +93,11 @@ for station in ['SUT', 'REF']:
 
         x = np.arange(len(timestamps))
         y = freqs
-        Z = data
+        Z = sp
 
         picture = ax.pcolorfast(x, y, Z,
                                 cmap='jet',
-                                norm=colors.LogNorm(vmin=maximum/100000, vmax=maximum/10),  # logarithmic scaling
+                                norm=colors.LogNorm(vmin=1e3, vmax=1e6),  # logarithmic scaling
                                 )
         ax.set_yscale('log')
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
@@ -85,4 +107,10 @@ for station in ['SUT', 'REF']:
         cb = plt.colorbar(picture)
         cb.set_label('Arbitrary Units')
 
-        plt.savefig(title + 'normalized.pdf', format='pdf')
+        plt.savefig(f"{results_repository}/{title}.pdf", format='pdf')
+
+
+length = (time.time() - start_time)
+length = length/60
+print(f"total duration of the whole script : {length} min")
+
