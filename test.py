@@ -6,7 +6,7 @@ from obspy import read
 from datetime import datetime, timedelta
 import pytest
 from numpy.testing import assert_array_equal
-# import re
+#import re
 
 
 class PerDeltaTest(unittest.TestCase):
