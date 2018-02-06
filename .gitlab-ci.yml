@@ -1,10 +1,11 @@
-test:
+image: boni
+
+test_1:
+  stage:test
+  before_script:
+    - apt update && apt -y install make python3-pip
+    - pip3 install -r requirements.txt
   script:
-  # install conda env
-  - apt-get update -qy
-  - apt-get install -y python3-dev
-  - python -V
-  - apt-get install -y python-pip
-  - pip install -r requirements.txt
-  # run tests
-  - python -V
+    - python -V
+
+
