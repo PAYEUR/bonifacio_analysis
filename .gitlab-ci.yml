@@ -14,11 +14,12 @@ before_script:
   - apt -y install python-suds
   - apt -y install ipython
   - pip install obspy
+  - pip install pytest
 
 stages:
   - test
 
 test:
   stage: test
-  script: python py.test
+  script: py.test
 

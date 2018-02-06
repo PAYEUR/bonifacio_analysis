@@ -5,7 +5,7 @@ from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 from datetime import datetime, timedelta
 
-mother_repository = 'D:/JBP-Preprog-Recherche/obspy/Bruit-de-fond'
+mother_repository = 'D:/JBP-Preprog-Recherche/obspy/data_test'
 stations_dict = {'SUT': ['Station-falaise', '570009'],
                  'REF': ['Station-reference', '570014']
                  }

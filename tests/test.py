@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import numpy as np
-from collect_data import model
+import collect_data.model as model
 from obspy import read
 from datetime import datetime, timedelta
 import pytest
@@ -37,7 +37,7 @@ class PerDeltaTest(unittest.TestCase):
 
 @pytest.fixture()
 def mother_repository():
-    return 'data_test/Bruit-de-fond'
+    return 'tests/data_test'
 
 
 @pytest.fixture()
@@ -59,7 +59,7 @@ def decimal_value():
 
 @pytest.fixture()
 def path_reference_file():
-    return "data_test/Bruit-de-fond/Station-falaise/2016.11.06-23.59.59.AG.570009.00.C00.SAC"
+    return "tests/data_test/Station-falaise/2016.11.06-23.59.59.AG.570009.00.C00.SAC"
 
 
 @pytest.fixture()
@@ -69,12 +69,12 @@ def reference_trace(path_reference_file):
 
 @pytest.fixture()
 def path_short_file():
-    return "data_test/Bruit-de-fond/Station-reference/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
+    return "tests/data_test/Station-reference/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
 
 
 @pytest.fixture()
 def path_long_file():
-    return "data_test/Bruit-de-fond/Station-falaise/2016.11.09-17.59.59.AG.570009.00.C00.SAC"
+    return "tests/data_test/Station-falaise/2016.11.09-17.59.59.AG.570009.00.C00.SAC"
 
 
 def test_create_path(mother_repository, station_dict, timestamps, path_reference_file):
@@ -149,8 +149,8 @@ def test_compute_spectrogram(path_short_file,
 
 
     # building data to test
-    path0 = "data_test/Bruit-de-fond/Station-reference/2016.11.06-23.59.59.AG.570014.00.C00.SAC"
-    path1 = "data_test/Bruit-de-fond/Station-reference/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
+    path0 = "tests/data_test/Station-reference/2016.11.06-23.59.59.AG.570014.00.C00.SAC"
+    path1 = "tests/data_test/Station-reference/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
     p_xx_0, freqs = model.compute_decimated_spectrum(read(path0)[0], reference_trace, decimal_value)
     p_xx_1 = model.compute_decimated_spectrum(read(path1)[0], reference_trace, decimal_value)[0]
 
