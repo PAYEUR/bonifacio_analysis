@@ -3,8 +3,17 @@ image: "python:3.6"
 before_script:
   - apt update
   - python --version
-  - apt -y install python-pip
-  - pip install -r requirements.txt
+  - apt -y install python-dev
+  - apt -y install python-setuptools
+  - apt -y install python-numpy
+  - apt -y install python-numpy-dev
+  - apt -y install python-numpy-scipy
+  - apt -y install python-numpy-matplotlib
+  - apt -y install python-numpy-lxml
+  - apt -y install python-numpy-sqlalchemy
+  - apt -y install python-numpy-suds
+  - apt -y install ipython
+  - pip install obspy
 
 stages:
   - test
