@@ -3,6 +3,8 @@ image: "python:3.6"
 before_script:
   - apt update
   - python --version
+  # pip install -r requirements.txt doesn't work
+  # need to install packages by hand
   - apt -y install python-dev
   - apt -y install python-setuptools
   - apt -y install python-numpy
@@ -21,5 +23,6 @@ stages:
 
 test:
   stage: test
-  script: py.test
+  # py.test doesn't work, because collect_data not in python pass
+  script: python -m pytest
 
