@@ -1,7 +1,7 @@
 image: boni
 
 test_1:
-  stage:test
+  stage: test
   before_script:
     - apt update && apt -y install make python3-pip
     - pip3 install -r requirements.txt
