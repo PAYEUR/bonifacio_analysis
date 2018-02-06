@@ -1,11 +1,15 @@
-image: boni
+image: "python:3.6"
 
-test_1:
+before_script:
+  - apt update
+  - python --version
+  - apt -y install python3-pip
+  - pip3 install -r requirements.txt
+
+stages:
+  - test
+
+test:
   stage: test
-  before_script:
-    - apt update && apt -y install make python3-pip
-    - pip3 install -r requirements.txt
-  script:
-    - python -V
-
+  script: python py.test
 
