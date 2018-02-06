@@ -2,8 +2,7 @@ test:
   script:
   # install conda env
   - apt-get update -qy
-  - apt-get install python-pip
-  - apt-get install python3.5
+  - apt-get install -y python3.6.2 python-pip
   - pip install -r requirements.txt
   # run tests
-  - python manage.py test
+  - python -V

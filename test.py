@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import unittest
 import numpy as np
-import collect_data.model as model
+from collect_data import model
 from obspy import read
 from datetime import datetime, timedelta
 import pytest
 from numpy.testing import assert_array_equal
-import re
+# import re
 
 
 class PerDeltaTest(unittest.TestCase):
