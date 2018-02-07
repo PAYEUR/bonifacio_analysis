@@ -14,7 +14,6 @@ before_script:
   - apt -y install python-lxml
   - apt -y install python-sqlalchemy
   - apt -y install python-suds
-  - apt -y install ipython
   - pip install obspy
   - pip install pytest
 
