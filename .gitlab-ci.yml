@@ -1,0 +1,28 @@
+image: "python:3.6"
+
+before_script:
+  - apt update
+  - python --version
+  # pip install -r requirements.txt doesn't work
+  # need to install packages by hand
+  - apt -y install python-dev
+  - apt -y install python-setuptools
+  - apt -y install python-numpy
+  - apt -y install python-numpy-dev
+  - apt -y install python-scipy
+  - apt -y install python-matplotlib
+  - apt -y install python-lxml
+  - apt -y install python-sqlalchemy
+  - apt -y install python-suds
+  - apt -y install ipython
+  - pip install obspy
+  - pip install pytest
+
+stages:
+  - test
+
+test:
+  stage: test
+  # py.test doesn't work, because collect_data not in python pass
+  script: python -m pytest
+
