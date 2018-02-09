@@ -5,9 +5,7 @@ import pytest
 from pathlib import Path
 from datetime import timedelta
 
-# @pytest.fixture()
-# def mother_repository_path():
-#     return Path('data_test')
+
 #
 #
 # @pytest.fixture()
@@ -86,7 +84,30 @@ from datetime import timedelta
 # def test_get_duration(trace):
 #     assert trace.duration == timedelta(seconds=3595, microseconds=995000)
 
-
 # FileManager tests
+@pytest.fixture()
+def repository_path():
+    return 'D:/JBP-Preprog-Recherche/Bonifacio_obspy/bonifacio_analysis/tests/data_test/Falaise_Janv2017/'
 
 
+@pytest.fixture()
+def file_name_regexp():
+    return '*.C00.SAC'
+
+
+@pytest.fixture()
+def TraceManager(repository_path, file_name_regexp):
+    return cd_model.TraceManager(repository_path, file_name_regexp)
+
+
+def test_sort_traces1(TraceManager):
+    assert len(TraceManager.non_merged_traces) == 4
+
+
+def test_sort_traces2(TraceManager):
+    sorted_but_not_merged_list = sorted(TraceManager.unsorted_traces, key=lambda trace: trace.stats.starttime)
+    assert TraceManager.non_merged_traces == sorted_but_not_merged_list
+
+
+def test_sort_traces3(TraceManager):
+    assert len(TraceManager.sorted_traces) == 2
