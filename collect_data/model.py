@@ -1,12 +1,54 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from obspy import read
+import obspy
+from datetime import datetime, timedelta
 from obspy.core.stream import Stream
 from matplotlib.mlab import psd
 import re
 
 
-# Time functions
+class TraceManager:
+
+    def __init__(self, repository_path):
+        self.repository_path = repository_path
+        self.sorted_traces = self.sort_traces
+
+    def sort_traces(self):
+        """
+        :return: Read all SAC files of the folder and return an array sorted-by-starttime traces
+        """
+        unsorted_traces = []
+        for file_path in list(self.repository_path.glob('*.SAC')):
+            stream = obspy.read(file_path)
+            trace = stream[0]  # in the bonifacio configuration
+            unsorted_traces.append(trace)
+
+        # sorting it
+        sorted_traces = sorted(unsorted_traces, key=lambda trace: trace.stats.starttime)
+
+        self.merge_same_hour(sorted_traces)
+
+        return sorted_traces
+
+    def merge_same_hour(self, first_sorted_traces):
+        repository_start_time = first_sorted_traces[0].stats.starttime
+        repository_end_time = first_sorted_traces[-1].stats.endtime
+        current_time = repository_start_time
+        while current_time < repository_end_time:
+            st = obspy.Stream()
+            i = 0
+            # count number of traces within the same hour
+            for trace in first_sorted_traces:
+                if trace.t.stats.starttime.hour == current_time.hour:
+                    st.traces[i] = trace
+                    i += 1
+            # merge them
+            st.merge(method=1)
+
+            current_time = current_time + timedelta(hours=1)
+
+
+            # Time functions
 def perdelta(start, end, delta):
     """
     :param start: datetime.datetime

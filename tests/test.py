@@ -43,8 +43,8 @@ def mother_repository():
 
 @pytest.fixture()
 def station_dict():
-    return {'SUT': ['Station-falaise', '570009'],
-            'REF': ['Station-reference', '570014'],
+    return {'SUT': ['Falaise_nov2016', '570009'],
+            'REF': ['Ref_nov2016', '570014'],
             }
 
 
@@ -60,7 +60,7 @@ def decimal_value():
 
 @pytest.fixture()
 def path_reference_file():
-    return "tests/data_test/Station-falaise/2016.11.06-23.59.59.AG.570009.00.C00.SAC"
+    return "tests/data_test/Falaise_nov2016/2016.11.06-23.59.59.AG.570009.00.C00.SAC"
 
 
 @pytest.fixture()
@@ -70,12 +70,12 @@ def reference_trace(path_reference_file):
 
 @pytest.fixture()
 def path_short_file():
-    return "tests/data_test/Station-reference/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
+    return "tests/data_test/Ref_nov2016/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
 
 
 @pytest.fixture()
 def path_long_file():
-    return "tests/data_test/Station-falaise/2016.11.09-17.59.59.AG.570009.00.C00.SAC"
+    return "tests/data_test/Falaise_nov2016/2016.11.09-17.59.59.AG.570009.00.C00.SAC"
 
 
 def test_create_path(mother_repository, station_dict, timestamps, path_reference_file):
@@ -150,8 +150,8 @@ def test_compute_spectrogram(path_short_file,
 
 
     # building data to test
-    path0 = "tests/data_test/Station-reference/2016.11.06-23.59.59.AG.570014.00.C00.SAC"
-    path1 = "tests/data_test/Station-reference/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
+    path0 = "tests/data_test/Ref_nov2016/2016.11.06-23.59.59.AG.570014.00.C00.SAC"
+    path1 = "tests/data_test/Ref_nov2016/2016.11.09-17.59.59.AG.570014.00.C00.SAC"
     p_xx_0, freqs = pd_model.compute_decimated_spectrum(read(path0)[0], reference_trace, decimal_value)
     p_xx_1 = pd_model.compute_decimated_spectrum(read(path1)[0], reference_trace, decimal_value)[0]
 
