@@ -13,7 +13,7 @@ class TraceManager:
     def __init__(self, repository_path, file_name_regexp):
         self.repository_path = repository_path
         self.file_name_regexp = file_name_regexp
-        self.sorted_traces = self.sort_traces()
+        self.sorted_and_merged_traces = self.sort_and_merge_traces()
 
     def sort_traces(self):
         """
@@ -28,42 +28,44 @@ class TraceManager:
 
         # sorting it
         sorted_traces = sorted(unsorted_traces, key=lambda trace: trace.stats.starttime)
-
-        # call for tests
-        self.unsorted_traces = unsorted_traces
-        self.non_merged_traces = sorted_traces
-
-        self.merge_same_hour(sorted_traces)
-
         return sorted_traces
 
-    def merge_same_hour(self, first_sorted_traces):
-        repository_start_time = first_sorted_traces[0].stats.starttime
-        repository_end_time = first_sorted_traces[-1].stats.endtime
+    def merge_same_hour(self, unmerged_traces):
+        """
+        :param unmerged_traces: array of obspy.traces sorted by starttime
+        :return: array of obspy.traces sorted by starttime and merged if some traces are within the same hour
+        """
 
-        current_time = repository_start_time
-        while current_time < repository_end_time:
-            st = obspy.Stream()
+        merged_traces = []
+        i = 0
+        stacked_traces = unmerged_traces[0]
+        while i < len(unmerged_traces)-1:
+            current_trace = unmerged_traces[i]
+            next_trace = unmerged_traces[i+1]
+            if current_trace.stats.starttime.hour == next_trace.stats.starttime.hour:
+                stacked_traces += next_trace
+            else:  # if no more hour in common
+                # save previous step
+                merged_traces.append(stacked_traces)
+                # reset stacked_traces
+                stacked_traces = next_trace
+            i += 1
 
-            # count number of traces within the same hour
-            for i, trace in enumerate(first_sorted_traces):
-                if trace.stats.starttime.hour == current_time.hour:
-                    st.traces.append(trace)
+        # add last element
+        merged_traces.append(stacked_traces)
 
-                    # continuous merging
-                    # TODO: improve this
-                    # see https: // docs.obspy.org / packages / autogen / obspy.core.trace.Trace.__add__.html  # obspy.core.trace.Trace.__add__
+        return merged_traces
 
-                    if len(st.traces) > 1:
-                        print([trace.stats.endtime for trace in first_sorted_traces])
-                        st.merge(method=1)
-                        first_sorted_traces[i] = st.traces[0]
-                        print([trace.stats.endtime for trace in first_sorted_traces])
-                        first_sorted_traces.pop(i-1)
+    def sort_and_merge_traces(self):
+        return self.merge_same_hour(self.sort_traces())
 
-                        print([trace.stats.endtime for trace in first_sorted_traces])
-                        # del st
-            current_time = current_time + timedelta(hours=1)
+    def get_starttimes(self):
+        return [trace.stats.starttime for trace in self.sorted_and_merged_traces]
+
+    def get_endtimes(self):
+        return [trace.stats.endtime for trace in self.sorted_and_merged_traces]
+
+
 
 
 
