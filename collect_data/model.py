@@ -96,11 +96,6 @@ class TraceManager:
         return [trace.stats.endtime for trace in self.sorted_and_merged_traces]
 
 
-
-
-
-
-
 # Time functions
 def perdelta(start, end, delta):
     """
