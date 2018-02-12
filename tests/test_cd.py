@@ -5,7 +5,7 @@ import pytest
 # FileManager tests
 @pytest.fixture()
 def repository_path():
-    return 'D:/JBP-Preprog-Recherche/Bonifacio_obspy/bonifacio_analysis/tests/data_test/Falaise_Janv2017/'
+    return 'tests/data_test/Falaise_Janv2017/'
 
 
 @pytest.fixture()
