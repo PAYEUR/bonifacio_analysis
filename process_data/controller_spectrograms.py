@@ -9,8 +9,8 @@ import time
 from obspy import read
 
 # local settings
-# stations_dict = {'SUT': ['Station-falaise', '570009'],
-                 # 'REF': ['Station-reference', '570014'],
+# stations_dict = {'SUT': ['Falaise_nov2016', '570009'],
+                 # 'REF': ['Ref_nov2016', '570014'],
                  # }
 # mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/data_test"
 
@@ -37,7 +37,7 @@ end = datetime(year=2017,
                second=59)
 
 
-reference_trace = read("D:/JBP-Preprog-Recherche/Bonifacio_obspy/bonifacio_analysis/tests/data_test/Station-falaise/2016.11.06-23.59.59.AG.570009.00.C00.SAC")[0]
+reference_trace = read("D:/JBP-Preprog-Recherche/Bonifacio_obspy/bonifacio_analysis/tests/data_test/Falaise_nov2016/2016.11.06-23.59.59.AG.570009.00.C00.SAC")[0]
 
 
 time_list = model.perdelta(start, end, timedelta(hours=1))

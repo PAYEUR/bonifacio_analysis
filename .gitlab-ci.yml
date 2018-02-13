@@ -20,5 +20,5 @@ stages:
 test:
   stage: test
   # py.test doesn't work, because collect_data not in python path
-  script: python -m pytest
+  script: python -m pytest tests/
 

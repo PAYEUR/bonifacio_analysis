@@ -1,9 +1,107 @@
 # -*- coding: utf-8 -*-
-import numpy as np
-from obspy import read
-from obspy.core.stream import Stream
-from matplotlib.mlab import psd
-import re
+import obspy
+import glob
+from datetime import timedelta
+
+
+class TraceManager:
+
+    def __init__(self,
+                 repository_path,
+                 file_name_regexp,
+                 start_at_59=True,
+                 sort_by=lambda trace: trace.stats.starttime
+                 ):
+
+        self.repository_path = repository_path
+        self.file_name_regexp = file_name_regexp
+        self.start_at_59 = start_at_59
+        self.sort_by = sort_by
+        self.traces = self.merge_traces()
+
+    def sort_traces(self):
+        """
+        :return: Read all SAC files of the folder and return an array sorted-by-starttime traces
+        """
+        unsorted_traces = []
+        files_list = glob.glob(self.repository_path + self.file_name_regexp)
+        for file_path in files_list:
+            stream = obspy.read(file_path)
+            trace = stream[0]  # in the bonifacio configuration
+            unsorted_traces.append(trace)
+
+        # sorting it
+        sorted_traces = sorted(unsorted_traces, key=self.sort_by)
+        return sorted_traces
+
+    def merge_traces(self):
+        """
+        :return: array of obspy.traces sorted by starttime and merged if some traces are within the same hour
+        """
+
+        unmerged_traces = self.sort_traces()
+        merged_traces = []
+        i = 0
+        stacked_traces = unmerged_traces[0]
+        while i < len(unmerged_traces)-1:
+            current_trace = unmerged_traces[i]
+            next_trace = unmerged_traces[i+1]
+
+            is_same_hour = self.is_same_hour(current_trace, next_trace)
+
+            if is_same_hour:
+                stacked_traces += next_trace
+            else:  # if no more hour in common
+                # save previous step
+                merged_traces.append(stacked_traces)
+                # reset stacked_traces
+                stacked_traces = next_trace
+            i += 1
+
+        # add last element
+        merged_traces.append(stacked_traces)
+
+        return merged_traces
+
+    def is_same_hour(self, trace1, trace2):
+        """
+        Build assertions for if-loop depending on self.start_at_59, trace.starttime and trace.endtime.
+        If self.start_at_59 is true, then XXh59-59 is considered to be equal to XX+1h00-00
+        For example:
+        09h59-59 == 10h00-00 is True
+        If self.start_at_59 is false, then the condition is only on entire value of hour
+        For example:
+        09h59-59 is considered to be part of 09h
+        10h00-00 is considered to be part of 10h
+        Then 09h59-59 == 10h00-00 is False
+        :param trace1: obspy.trace
+        :param trace2: obspy.trace
+        :return: Assertion on trace1.start_time and trace2.starttime
+        """
+
+        t1_start_time = trace1.stats.starttime
+        # t1_end_time = trace1.stats.endtime
+        t2_start_time = trace2.stats.starttime
+        # t2_end_time = trace2.stats.endtime
+
+        if self.start_at_59 is True:
+            # add 2 seconds to get same hour from XXh 59min 59 sec
+            t1_start_time += timedelta(seconds=2)
+            t2_start_time += timedelta(seconds=2)
+
+        return t1_start_time.hour == t2_start_time.hour
+
+    def get_starttimes(self):
+        """
+        :return: an array of self.sorted_and_merged_traces starttimes
+        """
+        return [trace.stats.starttime for trace in self.traces]
+
+    def get_endtimes(self):
+        """
+        :return: an array of self.sorted_and_merged_traces endtimes
+        """
+        return [trace.stats.endtime for trace in self.traces]
 
 
 # Time functions
@@ -47,74 +145,3 @@ def create_path(mother_repository, stations_dict, station, timestamp, direction)
            f"{timestamp}.*.AG.{stations_dict[station][1]}.00." \
            f"C{index}.SAC"
 
-
-# -----------------------------------------------------------------------------------
-# spectrogram functions
-def compute_decimated_spectrum(trace, reference_trace, decimal_value):
-    """
-    :param trace:
-    :param reference_trace: trace corresponding to the maximal size file
-    :param decimal_value: int, beetween 1 and +infinity
-
-    :return: decimate trace and return frequencies and spectrum arrays
-    """
-
-    decimated_t = trace.copy().decimate(decimal_value)
-    decimated_rt = reference_trace.copy().decimate(decimal_value)
-    p_xx, frequencies = psd(decimated_t,
-                            #NFFT=max_trace_length,
-                            NFFT=len(decimated_t)//4,
-                            pad_to=len(decimated_rt),
-                            Fs=decimated_t.stats.sampling_rate,
-                            detrend='mean',
-                            #noverlap=1000,
-                            )
-    return p_xx, frequencies
-
-
-def compute_ratio(numerator, denominator, water_level_ratio):
-    """
-    :param numerator: stream, above
-    :param denominator: stream, below
-    :param water_level_ratio: float, % of water level, between 0 and 1
-    :return: np.array: numerator over denominator modified with water level
-    """
-
-    den2 = denominator + water_level_ratio*np.mean(denominator)
-    return numerator/den2
-
-
-# -----------------------------------------------------------------------------------
-# controller function
-
-def compute_spectrogram(timestamps,
-                        mother_repository,
-                        stations_dict,
-                        station,
-                        direction,
-                        decimal_value,
-                        reference_trace):
-    """
-    :param timestamps:
-    :param mother_repository:
-    :param stations_dict:
-    :param station:
-    :param direction:
-    :param decimal_value
-    :param reference_trace
-    :return:
-    """
-    hours_spectros = []
-    freqs = None
-
-    for timestamp in timestamps:
-        path = create_path(mother_repository, stations_dict, station, timestamp, direction)
-        trace = read(path)[0]
-        if freqs is None:
-            p_xx, freqs = compute_decimated_spectrum(trace, reference_trace, decimal_value)
-        else:
-            p_xx = compute_decimated_spectrum(trace, reference_trace, decimal_value)[0]
-        hours_spectros.append(p_xx)
-
-    sp = np.transpose(np.array(hours_spectros))
-    return sp, freqs
