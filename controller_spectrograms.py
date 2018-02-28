@@ -102,6 +102,7 @@ for directory in data_folders:
                                 norm=colors.LogNorm(vmin=1e3, vmax=1e6),  # logarithmic scaling
                                 )
         ax.set_yscale('log')
+        # TODO: replace xaxis by trace_manager.get_starttimes()
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
         ax.yaxis.set_minor_formatter(FormatStrFormatter('%.0f'))
         plt.ylim(ymin=1, ymax=np.max(y))
