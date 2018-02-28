@@ -4,14 +4,12 @@ from process_data import model as pd_model
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
-from datetime import datetime, timedelta
 from matplotlib.ticker import FormatStrFormatter
 import time
-from obspy import read
 
 # local settings
 mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
-data_folders = ['Station-falaise', 'Station-reference']
+data_folders = ['Station-reference'] #'Station-falaise',
 
 # prod settings
 # mother_repository = '//SRV51-NETAPP2/Data_RS/Bonifacio/Bonifacio-bdf-definitif'
@@ -58,14 +56,16 @@ for directory in data_folders:
 
         print(f"Computing {title} spectrogram...")
 
+        # TODO: change hours_spectro into an iterable
         hours_spectros = []
 
+        # TODO: change trace_manager.traces into an iterable
         for trace in trace_manager.traces:
             trace_processor.filter_trace(trace)
             p_xx = trace_processor.compute_decimated_spectrum(trace)[0]
             hours_spectros.append(p_xx)
-            del trace
 
+        # TODO: check this cautiously
         sp = np.transpose(np.array(hours_spectros))
         del hours_spectros
 
@@ -77,7 +77,7 @@ for directory in data_folders:
         np.savetxt(save_file_sp, sp, fmt='%1.4e')
 
         # -------------------------------------------------------------------------
-        # TODO: need to compute maximums
+        # May need to compute maximums
         # maximum = max(np.max(sp), maximum)
         # computing max amplitude of all spectrograms
         # print("Maximal amplitude value: " + str(maximum))
@@ -93,7 +93,7 @@ for directory in data_folders:
         ax.set_xlabel('Hours')
         ax.set_ylabel('Frequency (Hz)')
 
-        x = trace_manager.get_starttimes()
+        x = np.arange(len(trace_manager.get_starttimes()))
         y = trace_processor.filtred_and_decimated_ref_freqs
         Z = sp
 
@@ -104,7 +104,7 @@ for directory in data_folders:
         ax.set_yscale('log')
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
         ax.yaxis.set_minor_formatter(FormatStrFormatter('%.0f'))
-        plt.ylim(ymin=1, ymax=np.max(trace_processor.filtred_and_decimated_ref_freqs))
+        plt.ylim(ymin=1, ymax=np.max(y))
 
         cb = plt.colorbar(picture)
         cb.set_label('Arbitrary Units')

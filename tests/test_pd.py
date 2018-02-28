@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import process_data.model as pd_model
-from obspy import read, signal
+from obspy import read
 import pytest
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import os
 
 
 @pytest.fixture()
@@ -119,3 +123,55 @@ def test_filter_trace(trace_processor):
                                                                    )
 
     assert filter_test == reference_test
+
+
+def test_trace_processor_shapes(trace_processor, short_trace):
+    x = [short_trace.stats.starttime]
+    y = trace_processor.filtred_and_decimated_ref_freqs
+
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    sp = np.transpose(np.array([pxx]))
+
+    assert(sp.shape[:2] == (len(y), len(x)))
+
+
+# https://matplotlib.org/devel/testing.html
+
+def test_plot(trace_processor, short_trace, long_trace):
+
+    x0 = [short_trace.stats.starttime, long_trace.stats.starttime]
+    x = np.arange(len(x0))
+    y = trace_processor.filtred_and_decimated_ref_freqs
+
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx1 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    trace = long_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx2 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    Z = np.transpose(np.array([pxx1, pxx2]))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    picture = ax.pcolorfast(x, y, Z,
+                            cmap='jet',
+                            norm=colors.LogNorm(vmin=1e3, vmax=1e6),
+                            )
+    ax.set_yscale('log')
+    plt.ylim(ymin=1, ymax=np.max(y))
+    plt.colorbar(picture)
+
+    # TODO: make this more beautiful
+    img_reference = mpimg.imread('tests/figure_test.png')
+    path = 'tests/test.png'
+    plt.savefig(path, format='png')
+    img_test = mpimg.imread(path)
+    os.remove(path)
+
+    np.testing.assert_array_equal(img_test, img_reference)
+

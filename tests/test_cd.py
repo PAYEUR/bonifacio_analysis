@@ -63,6 +63,11 @@ def test_merge_same_hour_without_start_at_59(trace_manager_no_start_at_59):
 def test_merge_same_hour_with_start_at_59(trace_manager_start_at_59):
     merged_traces = trace_manager_start_at_59.traces
     assert len(merged_traces) == 2
+    assert len(trace_manager_start_at_59.get_starttimes()) == len(merged_traces)
     assert merged_traces[0].stats.starttime.minute == 40
     assert merged_traces[1].stats.starttime.minute == 59
 
+
+def test_shapes(trace_manager_start_at_59, trace_manager_no_start_at_59):
+    assert len(trace_manager_start_at_59.get_starttimes()) == len(trace_manager_start_at_59.traces)
+    assert len(trace_manager_no_start_at_59.get_starttimes()) == len(trace_manager_no_start_at_59.traces)
