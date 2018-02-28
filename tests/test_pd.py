@@ -138,8 +138,6 @@ def test_trace_processor_shapes(trace_processor, short_trace):
     assert(sp.shape[:2] == (len(y), len(x)))
 
 
-# https://matplotlib.org/devel/testing.html
-
 def test_plot(trace_processor, short_trace, long_trace):
 
     x0 = [short_trace.stats.starttime, long_trace.stats.starttime]
