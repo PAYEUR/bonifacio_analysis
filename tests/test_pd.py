@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import process_data.model as pd_model
-from obspy import read
+from obspy import read, signal
 import pytest
 
 
@@ -106,3 +106,15 @@ def test_compute_decimated_spectrum_merged_trace_fail(reference_trace,
         result = True
 
     assert result is True
+
+
+def test_filter_trace(reference_trace):
+
+    filter_test = pd_model.filter_trace(reference_trace)
+
+    reference_test = reference_trace.copy().filter('bandpass',
+                                                   freqmin=0.5,
+                                                   freqmax=15,
+                                                   )
+
+    assert filter_test == reference_test
