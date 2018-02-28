@@ -53,7 +53,7 @@ for directory in data_folders:
         print(f"Selecting {title} files...")
 
         regexp = f'*{file_reference}.SAC'
-        repository_path = f'mother_repository/{directory}/'
+        repository_path = f'{mother_repository}/{directory}/'
         trace_manager = cd_model.TraceManager(repository_path, regexp)
 
         print(f"Computing {title} spectrogram...")
