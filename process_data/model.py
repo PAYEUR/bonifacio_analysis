@@ -7,7 +7,6 @@ from obspy import read
 # -----------------------------------------------------------------------------------
 # spectrogram functions
 
-# TODO: finish this
 class TraceProcessor:
 
     def __init__(self,
