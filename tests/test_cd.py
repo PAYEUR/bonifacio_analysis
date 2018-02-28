@@ -24,7 +24,7 @@ def trace_manager_no_start_at_59(repository_path, file_name_regexp):
     return cd_model.TraceManager(repository_path, file_name_regexp, start_at_59=False)
 
 
-def test_build_condition(trace_manager_start_at_59, trace_manager_no_start_at_59):
+def test_is_same_hour(trace_manager_start_at_59, trace_manager_no_start_at_59):
 
     # one creates test traces
     sorted_traces = trace_manager_start_at_59.sort_traces()

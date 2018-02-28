@@ -36,7 +36,8 @@ class TraceManager:
 
     def merge_traces(self):
         """
-        :return: array of obspy.traces sorted by starttime and merged if some traces are within the same hour
+        :return: array of obspy.traces sorted by starttime and merged if some traces are within the same hour.
+        Gaps between merged traces are filled with 0
         """
 
         unmerged_traces = self.sort_traces()
@@ -50,7 +51,8 @@ class TraceManager:
             is_same_hour = self.is_same_hour(current_trace, next_trace)
 
             if is_same_hour:
-                stacked_traces += next_trace
+                # https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.__add__.html
+                stacked_traces.__add__(next_trace, fill_value=0)
             else:  # if no more hour in common
                 # save previous step
                 merged_traces.append(stacked_traces)
@@ -102,46 +104,3 @@ class TraceManager:
         :return: an array of self.sorted_and_merged_traces endtimes
         """
         return [trace.stats.endtime for trace in self.traces]
-
-
-# Time functions
-def perdelta(start, end, delta):
-    """
-    :param start: datetime.datetime
-    :param end: datetime.datetime
-    :param delta: datetime.timedelta
-    :return: list of string in strf "%Y.%m.%d-%H.%M.%S" format
-    """
-    strf = "%Y.%m.%d-%H"
-    time_list = [start.strftime(strf)]
-    curr = start
-    while curr < end:
-        curr += delta
-        time_list.append(curr.strftime(strf))
-    return time_list
-
-
-# -----------------------------------------------------------------------------------
-# files and stream manager functions
-def create_path(mother_repository, stations_dict, station, timestamp, direction):
-    """
-
-    :param mother_repository: string, path of mother repository
-    :param stations_dict: dict, stations parameters
-    :param station: 'SUT' or 'REF', key of station_dict
-    :param timestamp: string, timestamp
-    :param direction: 'Z', 'N' or 'E'
-    :return:
-        string, path of corresponding file
-    """
-    if direction == 'Z':
-        index = '00'
-    elif direction == 'N':
-        index = '01'
-    elif direction == 'E':
-        index = '02'
-
-    return f"{mother_repository}/{stations_dict[station][0]}/" \
-           f"{timestamp}.*.AG.{stations_dict[station][1]}.00." \
-           f"C{index}.SAC"
-
