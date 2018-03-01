@@ -105,15 +105,11 @@ def test_compute_decimated_spectrum_merged_trace(trace_processor, merged_trace_f
     assert np.shape(psd1) == np.shape(psd2)
 
 
+# https://docs.pytest.org/en/latest/assert.html#assertions-about-expected-exceptions
 def test_compute_decimated_spectrum_merged_trace_fail(trace_processor, merged_trace_fill_value_none):
 
-    result = False
-    try:
+    with pytest.raises(NotImplementedError):
         trace_processor.compute_decimated_spectrum(merged_trace_fill_value_none.copy())
-    except NotImplementedError:
-        result = True
-
-    assert result is True
 
 
 def test_filter_trace(trace_processor):
