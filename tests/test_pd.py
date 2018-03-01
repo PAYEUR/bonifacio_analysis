@@ -3,6 +3,9 @@ import numpy as np
 import process_data.model as pd_model
 from obspy import read
 import pytest
+# https://matplotlib.org/faq/howto_faq.html#matplotlib-in-a-web-application-server
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
