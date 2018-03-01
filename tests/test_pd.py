@@ -3,16 +3,23 @@ import numpy as np
 import process_data.model as pd_model
 from obspy import read
 import pytest
+# https://matplotlib.org/faq/howto_faq.html#matplotlib-in-a-web-application-server
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import os
 
 
 @pytest.fixture()
-def decimal_value():
+def decimate_factor():
     return 15  # in order to run tests faster. Need to be smaller than 16
 
 
 @pytest.fixture()
-def reference_trace():
-    return read('tests/data_test/Falaise_nov2016/2016.11.06-23.59.59.AG.570009.00.C00.SAC')[0]
+def reference_file_path():
+    return 'tests/data_test/Falaise_nov2016/2016.11.06-23.59.59.AG.570009.00.C00.SAC'
 
 
 @pytest.fixture()
@@ -41,20 +48,34 @@ def merged_trace_fill_value_none():
     return trace1.__add__(trace2)
 
 
-def test_compute_decimated_spectrum_same_file_size(reference_trace, decimal_value):
+@pytest.fixture()
+def trace_processor(reference_file_path, decimate_factor):
+    return pd_model.TraceProcessor(reference_file_path,
+                                   decimate_factor,
+                                   0.5,
+                                   15)
+
+
+def test_get_pad_to_value(trace_processor, reference_file_path, decimate_factor):
+    reference_trace = read(reference_file_path)[0]
+    reference_trace_decimated = reference_trace.copy().decimate(decimate_factor)
+    expected_length = len(reference_trace_decimated)
+
+    assert expected_length == trace_processor.pad_to
+
+
+def test_compute_decimated_spectrum_same_file_size(trace_processor, long_trace):
     """
     Test compute_decimated_spectrum function.
     Check frequencies.
     Check if the PSD corresponding to the first frequency is not enormous (related to 'detrend' parameter)
     """
 
-    pxx, frequencies = pd_model.compute_decimated_spectrum(trace=reference_trace,
-                                                           reference_trace=reference_trace,
-                                                           decimal_value=decimal_value)
+    pxx, frequencies = trace_processor.compute_decimated_spectrum(long_trace.copy())
 
     # build reference data
-    decimated_t = reference_trace.copy().decimate(decimal_value)
-    decimated_rt = reference_trace.copy().decimate(decimal_value)
+    decimated_t = long_trace.copy().decimate(trace_processor.decimate_factor)
+    decimated_rt = trace_processor.reference_trace.copy().decimate(trace_processor.decimate_factor)
     fs = decimated_t.stats.sampling_rate
     # not totally equal because of decimate function
     # => can check shape only
@@ -68,41 +89,85 @@ def test_compute_decimated_spectrum_same_file_size(reference_trace, decimal_valu
     assert 100 > frequencies[0]
 
 
-def test_compute_decimated_spectrum_different_file_size(decimal_value,
-                                                        short_trace,
-                                                        long_trace,
-                                                        reference_trace):
+def test_compute_decimated_spectrum_different_file_size(trace_processor, long_trace, short_trace):
 
-    p_xx_1 = pd_model.compute_decimated_spectrum(long_trace, reference_trace, decimal_value)
-    p_xx_2 = pd_model.compute_decimated_spectrum(short_trace, reference_trace, decimal_value)
+    psd1 = trace_processor.compute_decimated_spectrum(long_trace.copy())
+    psd2 = trace_processor.compute_decimated_spectrum(short_trace.copy())
 
-    assert np.shape(p_xx_1) == np.shape(p_xx_2)
+    assert np.shape(psd1) == np.shape(psd2)
 
 
-def test_compute_decimated_spectrum_merged_trace(reference_trace,
-                                                 merged_trace_fill_value_0,
-                                                 decimal_value):
+def test_compute_decimated_spectrum_merged_trace(trace_processor, merged_trace_fill_value_0):
 
-    p_xx_1 = pd_model.compute_decimated_spectrum(reference_trace,
-                                                 reference_trace,
-                                                 decimal_value)
-    p_xx_2 = pd_model.compute_decimated_spectrum(merged_trace_fill_value_0,
-                                                 reference_trace,
-                                                 decimal_value)
+    psd1 = trace_processor.compute_decimated_spectrum(trace_processor.reference_trace.copy())
+    psd2 = trace_processor.compute_decimated_spectrum(merged_trace_fill_value_0.copy())
 
-    assert np.shape(p_xx_1) == np.shape(p_xx_2)
+    assert np.shape(psd1) == np.shape(psd2)
 
 
-def test_compute_decimated_spectrum_merged_trace_fail(reference_trace,
-                                                      merged_trace_fill_value_none,
-                                                      decimal_value):
+def test_compute_decimated_spectrum_merged_trace_fail(trace_processor, merged_trace_fill_value_none):
 
-    result = False
-    try:
-        pd_model.compute_decimated_spectrum(merged_trace_fill_value_none,
-                                            reference_trace,
-                                            decimal_value)
-    except NotImplementedError:
-        result = True
+    with pytest.raises(NotImplementedError):
+        trace_processor.compute_decimated_spectrum(merged_trace_fill_value_none.copy())
 
-    assert result is True
+
+def test_filter_trace(trace_processor):
+
+    filter_test = trace_processor.filter_trace(trace_processor.reference_trace.copy())
+
+    reference_test = trace_processor.reference_trace.copy().filter('bandpass',
+                                                                   freqmin=0.5,
+                                                                   freqmax=15,
+                                                                   )
+
+    assert filter_test == reference_test
+
+
+def test_trace_processor_shapes(trace_processor, short_trace):
+    x = [short_trace.stats.starttime]
+    y = trace_processor.filtred_and_decimated_ref_freqs
+
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    sp = np.transpose(np.array([pxx]))
+
+    assert(sp.shape[:2] == (len(y), len(x)))
+
+
+def test_plot(trace_processor, short_trace, long_trace):
+
+    x0 = [short_trace.stats.starttime, long_trace.stats.starttime]
+    x = np.arange(len(x0))
+    y = trace_processor.filtred_and_decimated_ref_freqs
+
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx1 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    trace = long_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx2 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    Z = np.transpose(np.array([pxx1, pxx2]))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    picture = ax.pcolorfast(x, y, Z,
+                            cmap='jet',
+                            norm=colors.LogNorm(vmin=1e3, vmax=1e6),
+                            )
+    ax.set_yscale('log')
+    plt.ylim(ymin=1, ymax=np.max(y))
+    plt.colorbar(picture)
+
+    # TODO: make this more beautiful
+    img_reference = mpimg.imread('tests/figure_test.png')
+    path = 'tests/test.png'
+    plt.savefig(path, format='png')
+    img_test = mpimg.imread(path)
+    os.remove(path)
+
+    np.testing.assert_array_equal(img_test, img_reference)
+
