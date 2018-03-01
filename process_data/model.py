@@ -26,7 +26,6 @@ class TraceProcessor:
     def get_pad_to_value(self):
         decimated_rt = self.reference_trace.copy().decimate(self.decimate_factor)
         pad_to_value = len(decimated_rt)
-        del decimated_rt
         return pad_to_value
 
     def filter_trace(self, trace):
@@ -63,7 +62,6 @@ class TraceProcessor:
     def get_filtred_and_decimated_ref_freqs(self):
         trace = self.reference_trace.copy()
         freqs = self.compute_decimated_spectrum(self.filter_trace(trace))[1]
-        del trace
         return freqs
 
 

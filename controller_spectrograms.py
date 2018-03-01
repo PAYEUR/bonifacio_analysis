@@ -9,7 +9,7 @@ import time
 
 # local settings
 mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
-data_folders = ['Station-reference'] #'Station-falaise',
+data_folders = ['Station-falaise']  # 'Station-reference',
 
 # prod settings
 # mother_repository = '//SRV51-NETAPP2/Data_RS/Bonifacio/Bonifacio-bdf-definitif'
@@ -29,14 +29,13 @@ reference_file_path = 'D:/JBP-Preprog-Recherche/Bonifacio_obspy/bonifacio_analys
 # Script:
 start_time = time.time()
 
-# maximum = 0
 spectrograms = dict()
 trace_processor = pd_model.TraceProcessor(reference_file_path,
                                           decimate_factor=5,
                                           freqmin=0.5,
                                           freqmax=15)
 
-print(f"Saving frequencies file")
+print("Saving frequencies file")
 save_file_f = f"{results_repository}/frequencies.txt"
 np.savetxt(save_file_f, trace_processor.filtred_and_decimated_ref_freqs, fmt='%1.4e')
 
