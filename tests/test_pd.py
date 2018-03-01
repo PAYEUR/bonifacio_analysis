@@ -9,6 +9,7 @@ matplotlib.use('Agg')
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import matplotlib.ticker as ticker
 import os
 
 
@@ -136,7 +137,7 @@ def test_trace_processor_shapes(trace_processor, short_trace):
     assert(sp.shape[:2] == (len(y), len(x)))
 
 
-def test_plot(trace_processor, short_trace, long_trace):
+def test_plot_log_scale(trace_processor, short_trace, long_trace):
 
     x0 = [short_trace.stats.starttime, long_trace.stats.starttime]
     x = np.arange(len(x0))
@@ -163,11 +164,104 @@ def test_plot(trace_processor, short_trace, long_trace):
     plt.colorbar(picture)
 
     # TODO: make this more beautiful
-    img_reference = mpimg.imread('tests/figure_test.png')
-    path = 'tests/test.png'
+    img_reference = mpimg.imread('tests/figure_log_test.png')
+    path = 'tests/test_log_scale.png'
     plt.savefig(path, format='png')
     img_test = mpimg.imread(path)
     os.remove(path)
 
     np.testing.assert_array_equal(img_test, img_reference)
 
+
+def test_plot_linear_scale(trace_processor, short_trace, long_trace):
+
+    y = np.array(trace_processor.filtred_and_decimated_ref_freqs)
+
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx1 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    trace = long_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx2 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    Z = np.transpose(np.array([pxx1, pxx2]))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    picture = ax.pcolorfast(np.arange(2), y, Z,
+                            cmap='jet',
+                            norm=colors.LogNorm(vmin=1e3, vmax=1e6),
+                            )
+    #ax.xaxis_date()
+    #plt.xlim(xmin=x[0], xmax=x[-1])
+    # ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
+    # ax.xaxis.set_major_locator(mdates.DayLocator)
+    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    # ax.autoscale_view()
+
+    #ax.set_yscale('log')
+    plt.ylim(ymin=1, ymax=np.max(y))
+
+    plt.colorbar(picture)
+
+    # TODO: make this more beautiful
+    img_reference = mpimg.imread('tests/figure_linear_test.png')
+    path = 'tests/test_linear_scale.png'
+    plt.savefig(path, format='png')
+    img_test = mpimg.imread(path)
+    os.remove(path)
+
+    np.testing.assert_array_equal(img_test, img_reference)
+
+
+def test_plot_x_axis_as_date(trace_processor, short_trace, long_trace):
+    x_ticks_labels = [short_trace.stats.starttime,
+                      long_trace.stats.starttime,
+                      long_trace.stats.starttime] + [long_trace.stats.endtime]
+
+    x = np.arange(len(x_ticks_labels))
+
+    y = trace_processor.filtred_and_decimated_ref_freqs
+
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx1 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    trace = long_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx2 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    trace = long_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx3 = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    Z = np.transpose(np.array([pxx1, pxx2, pxx3]))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    picture = ax.pcolorfast(x, y, Z,
+                            cmap='jet',
+                            norm=colors.LogNorm(vmin=1e3, vmax=1e6),
+                            )
+
+    # managing x axe: replace xticklabels by hand
+    # after https://stackoverflow.com/questions/17129947/how-to-set-ticks-on-fixed-position-matplotlib
+    name_list = [elt.date.isoformat() for elt in x_ticks_labels]
+    ax.xaxis.set_major_locator(ticker.FixedLocator(x))
+    ax.xaxis.set_major_formatter(ticker.FixedFormatter(name_list))
+
+    # managing y axe
+    ax.set_yscale('log')
+    plt.ylim(ymin=1, ymax=np.max(y))
+
+    plt.colorbar(picture)
+
+    # TODO: make this more beautiful
+    img_reference = mpimg.imread('tests/figure_x_axis_as_date_test.png')
+    path = 'tests/figure_x_axis_as_date_tested.png'
+    plt.savefig(path, format='png')
+    img_test = mpimg.imread(path)
+    os.remove(path)
+
+    np.testing.assert_array_equal(img_test, img_reference)

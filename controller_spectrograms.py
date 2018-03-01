@@ -66,7 +66,9 @@ for directory in data_folders:
 
         # TODO: check this cautiously
         sp = np.transpose(np.array(hours_spectros))
+        x_list = trace_manager.get_starttimes()
         del hours_spectros
+        del trace_manager
 
         # -------------------------------------------------------------------------
         # saving data in files
@@ -92,7 +94,7 @@ for directory in data_folders:
         ax.set_xlabel('Hours')
         ax.set_ylabel('Frequency (Hz)')
 
-        x = np.arange(len(trace_manager.get_starttimes()))
+        x = np.arange(len(x_list))
         y = trace_processor.filtred_and_decimated_ref_freqs
         Z = sp
 
@@ -100,11 +102,15 @@ for directory in data_folders:
                                 cmap='jet',
                                 norm=colors.LogNorm(vmin=1e3, vmax=1e6),  # logarithmic scaling
                                 )
+
+        # x axis:
+
+
+        # y axis:
         ax.set_yscale('log')
-        # TODO: replace xaxis by trace_manager.get_starttimes()
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
         ax.yaxis.set_minor_formatter(FormatStrFormatter('%.0f'))
-        plt.ylim(ymin=1, ymax=np.max(y))
+        plt.ylim(ymin=0.5, ymax=np.max(y))
 
         cb = plt.colorbar(picture)
         cb.set_label('Arbitrary Units')
