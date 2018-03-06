@@ -11,7 +11,7 @@ import os
 
 
 def assert_same_image_as(path_reference):
-    """ Compare image from path reference with image from path_tested
+    """ Compare image that is currently built with image from path reference
         and raise and AssertionError if they are not identical
     """
     path_tested = 'tests/figure_test/test.png'
@@ -133,11 +133,13 @@ def test_x_axis_as_date(trace_processor, short_trace, long_trace):
     x_labels_interval = 3
     ax.xaxis.set_major_locator(ticker.FixedLocator(x[::x_labels_interval]))
     ax.xaxis.set_major_formatter(ticker.FixedFormatter(name_list[::x_labels_interval]))
+    plt.xticks(rotation=70)
 
     # managing y axe
     ax.set_yscale('log')
     plt.ylim(ymin=1, ymax=np.max(y))
 
     plt.colorbar(picture)
+    plt.tight_layout()
 
     assert_same_image_as(path_reference='tests/figure_test/figure_x_axis_as_date_test.png')
