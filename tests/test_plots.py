@@ -10,10 +10,11 @@ import matplotlib.ticker as ticker
 import os
 
 
-def compare_images(path_reference, path_tested='tests/figure_test/test.png'):
+def assert_same_image_as(path_reference):
     """ Compare image from path reference with image from path_tested
         and raise and AssertionError if they are not identical
     """
+    path_tested = 'tests/figure_test/test.png'
     img_reference = mpimg.imread(path_reference)
     plt.savefig(path_tested, format='png')
     img_test = mpimg.imread(path_tested)
@@ -47,7 +48,7 @@ def test_log_scale(trace_processor, short_trace, long_trace):
     plt.ylim(ymin=1, ymax=np.max(y))
     plt.colorbar(picture)
 
-    compare_images(path_reference='tests/figure_test/figure_log_test.png')
+    assert_same_image_as(path_reference='tests/figure_test/figure_log_test.png')
 
 
 def test_linear_scale(trace_processor, short_trace, long_trace):
@@ -75,7 +76,7 @@ def test_linear_scale(trace_processor, short_trace, long_trace):
 
     plt.colorbar(picture)
 
-    compare_images(path_reference='tests/figure_test/figure_linear_test.png')
+    assert_same_image_as(path_reference='tests/figure_test/figure_linear_test.png')
 
 
 def test_x_axis_as_date(trace_processor, short_trace, long_trace):
@@ -139,4 +140,4 @@ def test_x_axis_as_date(trace_processor, short_trace, long_trace):
 
     plt.colorbar(picture)
 
-    compare_images(path_reference='tests/figure_test/figure_x_axis_as_date_test.png')
+    assert_same_image_as(path_reference='tests/figure_test/figure_x_axis_as_date_test.png')
