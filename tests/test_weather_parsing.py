@@ -1,6 +1,10 @@
 import pytest
-import weather_parsing.model as mp_model
 from datetime import date
+
+from bs4 import BeautifulSoup
+
+import weather_parsing.model as mp_model
+from root import root
 
 
 @pytest.fixture()
@@ -15,7 +19,13 @@ def date_test():
 
 @pytest.fixture()
 def weather_parser(date_test):
-    return mp_model.WeatherParser(date_test, context='test')
+    wp = mp_model.WeatherParser(date_test)
+    wp._soup = BeautifulSoup(open(root/'tests/test.html', 'r'), 'lxml')
+    return wp
+
+
+def test_url(weather_parser, url_test):
+    assert weather_parser.url == url_test
 
 
 def test_temperature(weather_parser):
