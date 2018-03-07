@@ -13,6 +13,7 @@ before_script:
                    python-suds
   - pip install obspy
   - pip install pytest
+  - pip install beautifulsoup4
 
 stages:
   - test
