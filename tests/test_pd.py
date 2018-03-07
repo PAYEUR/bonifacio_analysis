@@ -3,33 +3,6 @@ import numpy as np
 import process_data.model as pd_model
 from obspy import read
 import pytest
-# https://matplotlib.org/faq/howto_faq.html#matplotlib-in-a-web-application-server
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.colors as colors
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import os
-
-
-@pytest.fixture()
-def decimate_factor():
-    return 15  # in order to run tests faster. Need to be smaller than 16
-
-
-@pytest.fixture()
-def reference_file_path():
-    return 'tests/data_test/Falaise_nov2016/2016.11.06-23.59.59.AG.570009.00.C00.SAC'
-
-
-@pytest.fixture()
-def short_trace():
-    return read('tests/data_test/Ref_nov2016/2016.11.09-17.59.59.AG.570014.00.C00.SAC')[0]
-
-
-@pytest.fixture()
-def long_trace():
-    return read('tests/data_test/Falaise_nov2016/2016.11.09-17.59.59.AG.570009.00.C00.SAC')[0]
 
 
 @pytest.fixture()
@@ -46,14 +19,6 @@ def merged_trace_fill_value_none():
     trace2 = read('tests/data_test/Falaise_Janv2017/2017.01.13-02.57.33.AG.570009.00.C00.SAC')[0]
     # https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.__add__.html#obspy.core.trace.Trace.__add__
     return trace1.__add__(trace2)
-
-
-@pytest.fixture()
-def trace_processor(reference_file_path, decimate_factor):
-    return pd_model.TraceProcessor(reference_file_path,
-                                   decimate_factor,
-                                   0.5,
-                                   15)
 
 
 def test_get_pad_to_value(trace_processor, reference_file_path, decimate_factor):
@@ -134,40 +99,3 @@ def test_trace_processor_shapes(trace_processor, short_trace):
     sp = np.transpose(np.array([pxx]))
 
     assert(sp.shape[:2] == (len(y), len(x)))
-
-
-def test_plot(trace_processor, short_trace, long_trace):
-
-    x0 = [short_trace.stats.starttime, long_trace.stats.starttime]
-    x = np.arange(len(x0))
-    y = trace_processor.filtred_and_decimated_ref_freqs
-
-    trace = short_trace.copy()
-    trace_processor.filter_trace(trace)
-    pxx1 = trace_processor.compute_decimated_spectrum(trace)[0]
-
-    trace = long_trace.copy()
-    trace_processor.filter_trace(trace)
-    pxx2 = trace_processor.compute_decimated_spectrum(trace)[0]
-
-    Z = np.transpose(np.array([pxx1, pxx2]))
-
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    picture = ax.pcolorfast(x, y, Z,
-                            cmap='jet',
-                            norm=colors.LogNorm(vmin=1e3, vmax=1e6),
-                            )
-    ax.set_yscale('log')
-    plt.ylim(ymin=1, ymax=np.max(y))
-    plt.colorbar(picture)
-
-    # TODO: make this more beautiful
-    img_reference = mpimg.imread('tests/figure_test.png')
-    path = 'tests/test.png'
-    plt.savefig(path, format='png')
-    img_test = mpimg.imread(path)
-    os.remove(path)
-
-    np.testing.assert_array_equal(img_test, img_reference)
-
