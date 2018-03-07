@@ -1,5 +1,6 @@
 import pytest
 import weather_parsing.model as mp_model
+from datetime import date
 
 
 @pytest.fixture()
@@ -8,14 +9,13 @@ def url_test():
 
 
 @pytest.fixture()
-def html_file_path_test():
-    return 'tests/test.html'
+def date_test():
+    return date(year=2016, month=11, day=3)
 
 
 @pytest.fixture()
-def weather_parser(html_file_path_test):
-    with open(html_file_path_test, 'r') as f:
-        return mp_model.WeatherParser(f)
+def weather_parser(date_test):
+    return mp_model.WeatherParser(date_test, context='test')
 
 
 def test_temperature(weather_parser):

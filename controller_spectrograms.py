@@ -8,12 +8,7 @@ import matplotlib.colors as colors
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter, FixedLocator, FixedFormatter
 import time
-from pathlib import Path
-
-
-def root():
-    return Path(__file__).parents[0]
-
+from root import root
 
 # local settings
 # mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
@@ -37,9 +32,9 @@ data_folders = ['Falaise-nov2016', 'Ref_nov2016',
 # common settings
 directions_dict = {'C00': 'Z', 'C01': 'N', 'C02': 'E'}
 
-results_repository = str(root()/'results')
+results_repository = str(root/'results')
 
-reference_file_path = str(root()/'tests/data_test/Falaise_nov2016/2016.11.06-23.59.59.AG.570009.00.C00.SAC')
+reference_file_path = str(root/'tests/data_test/Falaise_nov2016/2016.11.06-23.59.59.AG.570009.00.C00.SAC')
 
 # --------------------------------------------------------------------------------------
 # Script:
