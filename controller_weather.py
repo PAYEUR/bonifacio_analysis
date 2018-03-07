@@ -31,5 +31,4 @@ url = f"{start_url_string}/{day_string}/{month_string}/{year_string}/{end_url_st
 #with urllib.request.urlopen(url) as f:
 with open('tests/test.html', 'r') as f:
     wp = mp_model.WeatherParser(f)
-    print(wp.time_slots_spans)
-    print(wp.time_slots)
+    print(wp.get_rain_list())

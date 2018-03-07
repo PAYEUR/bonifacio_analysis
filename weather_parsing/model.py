@@ -17,6 +17,7 @@ class WeatherParser:
         self.wind_list = [float(elt.text) for elt in self.wind_spans[::2]]
         self.wind_gust_list = [float(elt.text) for elt in self.wind_spans[1::2]]
         self.time_slots_list = [float(elt.text.split('h')[0]) for elt in self.time_slots_spans]
+        self.rain_list = self.get_rain_list()
 
     def get_temp_spans(self):
         sp = self.soup.find_all('span',
@@ -33,6 +34,6 @@ class WeatherParser:
                                                })
         return sp
 
-    def get_water_spans(self):
-        sp_list = self.soup.find_all('td', attrs={'style': 'background-color:rgba(0,0,0,0.1)'})
-        return sp_list
+    def get_rain_list(self):
+        return [float(elt.parent.text.split()[0]) for elt in self.soup.find_all('span', string='mm/1h')]
+

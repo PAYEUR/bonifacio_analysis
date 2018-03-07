@@ -45,3 +45,8 @@ def test_time_slot(weather_parser):
 
     assert weather_parser.time_slots_list == time_slots_ref
 
+def test_rain(weather_parser)
+    rain_ref = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    assert weather_parser.rain_list == rain_ref
