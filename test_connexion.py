@@ -43,4 +43,3 @@ for date in date_list:
 
 
 print(wind[:10])
-
