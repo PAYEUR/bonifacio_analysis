@@ -70,4 +70,3 @@ class WeatherParser:
 
     def get_rain_list(self):
         return [float(elt.parent.text.split()[0]) for elt in self._soup.find_all('span', string='mm/1h')]
-
