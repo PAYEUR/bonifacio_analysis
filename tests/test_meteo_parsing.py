@@ -1,6 +1,5 @@
 import pytest
-import urllib.request
-import meteo_parsing.model as mp_model
+import weather_parsing.model as mp_model
 
 
 @pytest.fixture()
