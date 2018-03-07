@@ -37,3 +37,11 @@ def test_wind_gust(weather_parser):
                      75.6, 72.0, 72.0, 64.8, 68.4, 68.4, 64.8, 61.2, 57.6, 54.0]
 
     assert weather_parser.wind_gust_list == wind_gust_ref
+
+
+def test_time_slot(weather_parser):
+    time_slots_ref = [0.0, 23.0, 22.0, 21.0, 20.0, 19.0, 18.0, 17.0, 16.0, 15.0, 14.0, 13.0, 12.0, 11.0,
+                     10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0]
+
+    assert weather_parser.time_slots_list == time_slots_ref
+
