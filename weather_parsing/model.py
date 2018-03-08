@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
+import time
+import random
+import pickle
+import itertools
 
-from urllib import request
+from urllib import request, error
 
 from bs4 import BeautifulSoup
 
@@ -71,3 +75,41 @@ class WeatherParser:
 
     def get_rain_list(self):
         return [float(elt.parent.text.split()[0]) for elt in self._soup.find_all('span', string='mm/1h')]
+
+
+def save_weather_parser(date_list, file_name):
+
+    # get weather_parsers from Http request
+    data = {}
+    for date in date_list:
+        print('connexion')
+        time.sleep(random.uniform(1, 2))
+        try:
+            wp = WeatherParser(date)
+        except error.HTTPError:
+            time.sleep(random.uniform(5, 10))
+            try:
+                wp = WeatherParser(date)
+            except error.HTTPError:
+                print('steuplaye!')
+                time.sleep(random.uniform(20, 30))
+                wp = WeatherParser(date)
+        finally:
+            data[date] = wp
+
+    # open weather parser under file_name as dict(key=date, value=weather_parser)
+    with open(file_name, 'wb') as f:
+        pickle.dump(data, f)
+
+
+def read_weather_parser_file(data_file_name):
+
+    with open(data_file_name, 'rb') as f:
+        p = pickle.load(f)
+        wp_list = [data['date'] for data in p]
+        wind = list(itertools.chain(*[wp.wind_list for wp in wp_list]))
+        wind_gust = list(itertools.chain(*[wp.wind_gust for wp in wp_list]))
+        temp = list(itertools.chain(*[wp.temp for wp in wp_list]))
+        rain = list(itertools.chain(*[wp.rain for wp in wp_list]))
+
+    return wind, wind_gust, temp, rain
