@@ -95,21 +95,24 @@ def save_weather_parser(date_list, file_name):
                 time.sleep(random.uniform(20, 30))
                 wp = WeatherParser(date)
         finally:
-            data[date] = wp
-
+            data[date, 'temp'] = wp.temp_list
+            data[date, 'wind'] = wp.wind_list
+            data[date, 'wind_gust'] = wp.wind_gust_list
+            data[date, 'rain'] = wp.rain_list
+    print(data)
     # open weather parser under file_name as dict(key=date, value=weather_parser)
     with open(file_name, 'wb') as f:
         pickle.dump(data, f)
 
 
-def read_weather_parser_file(data_file_name):
+def read_weather_parser_file(date_list, data_file_name):
 
     with open(data_file_name, 'rb') as f:
-        p = pickle.load(f)
-        wp_list = [data['date'] for data in p]
-        wind = list(itertools.chain(*[wp.wind_list for wp in wp_list]))
-        wind_gust = list(itertools.chain(*[wp.wind_gust for wp in wp_list]))
-        temp = list(itertools.chain(*[wp.temp for wp in wp_list]))
-        rain = list(itertools.chain(*[wp.rain for wp in wp_list]))
+        data = pickle.load(f)
+
+        wind = list(itertools.chain(*[data[date, 'wind'] for date in date_list]))
+        rain = list(itertools.chain(*[data[date, 'rain'] for date in date_list]))
+        wind_gust = list(itertools.chain(*[data[date, 'wind_gust'] for date in date_list]))
+        temp = list(itertools.chain(*[data[date, 'temp'] for date in date_list]))
 
     return wind, wind_gust, temp, rain

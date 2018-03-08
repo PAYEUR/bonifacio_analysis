@@ -34,12 +34,13 @@ while date < end_time.date():
     date_list.append(date)
 
 # get data
-data_file_name = 'data.f'
+data_file_name = root/'data.f'
 try:
-    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(data_file_name)
+    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
 except FileNotFoundError:
-    wp_model.save_weather_parser(date_list, file_name=data_file_name)
-    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(data_file_name)
+    wp_model.save_weather_parser(date_list, data_file_name)
+    print('data saved')
+    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
 
 
 # plotting it
