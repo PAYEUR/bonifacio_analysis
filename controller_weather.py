@@ -66,7 +66,9 @@ ax3.axis([0, len(x), -10, 50])
 
 ax4 = fig.add_subplot(4, 1, 4)
 ax4.set_ylabel('Rain (mm/h')
-ax4.plot(np.arange(len(x)), rain)
-ax4.axis([0, len(x), 0, 50])
+# don't know why x.shape mismatches...
+ax4.plot(np.arange(len(x)-1), rain)
+ax4.axis([0, len(x)-1, 0, 50])
 
+plt.tight_layout()
 plt.savefig('toto.png', format='png')

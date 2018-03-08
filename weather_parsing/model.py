@@ -99,7 +99,7 @@ def save_weather_parser(date_list, file_name):
             data[date, 'wind'] = wp.wind_list
             data[date, 'wind_gust'] = wp.wind_gust_list
             data[date, 'rain'] = wp.rain_list
-    print(data)
+
     # open weather parser under file_name as dict(key=date, value=weather_parser)
     with open(file_name, 'wb') as f:
         pickle.dump(data, f)
