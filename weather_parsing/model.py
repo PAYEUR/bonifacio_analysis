@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
-import urllib.request
+
+from urllib import request
 
 from bs4 import BeautifulSoup
 
@@ -32,7 +33,7 @@ class WeatherParser:
         self.rain_list = self.get_rain_list()
 
     def get_readable_object(self):
-        return urllib.request.urlopen(self.url)
+        return request.urlopen(self.url)
 
     def create_url(self):
 
