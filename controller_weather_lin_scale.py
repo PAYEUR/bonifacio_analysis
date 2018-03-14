@@ -44,7 +44,7 @@ while date < end_time.date():
 
 
 print('getting weather data')
-data_file_name = root/f"{title}.f"
+data_file_name = root/f"weather_parsing/weather_data/{title}.f"
 try:
     wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
 except FileNotFoundError:
