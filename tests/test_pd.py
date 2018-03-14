@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-import numpy as np
-import process_data.model as pd_model
-from obspy import read
 import pytest
+import numpy as np
+from obspy import read
+
+import process_data.model as pd_model
+from root import root
 
 
 @pytest.fixture()
@@ -89,6 +91,7 @@ def test_filter_trace(trace_processor):
 
 
 def test_trace_processor_shapes(trace_processor, short_trace):
+    # test if frequencies, datetime_list and psd get the expected shape
     x = [short_trace.stats.starttime]
     y = trace_processor.filtred_and_decimated_ref_freqs
 
@@ -97,5 +100,24 @@ def test_trace_processor_shapes(trace_processor, short_trace):
     pxx = trace_processor.compute_decimated_spectrum(trace)[0]
 
     sp = np.transpose(np.array([pxx]))
+    # np.savetxt('freq.test', y, fmt='%1.10e')
+    # np.savetxt('sp.test', sp, fmt='%1.4e')
 
     assert(sp.shape[:2] == (len(y), len(x)))
+
+
+def test_get_spectrogram(trace_processor, short_trace):
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
+    ref_sp = np.transpose(np.array([pxx]))
+    test_sp = pd_model.get_spectrogram(str(root/'tests/data_test/sp.test'))
+
+    assert np.allclose(ref_sp, test_sp, rtol=1e-4)
+
+
+def test_get_frequencies(trace_processor):
+    ref_freqs = trace_processor.filtred_and_decimated_ref_freqs
+    test_freqs = pd_model.get_frequencies(str(root/'tests/data_test/freq.test'))
+
+    assert np.allclose(ref_freqs, test_freqs, rtol=1e-10)

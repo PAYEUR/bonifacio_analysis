@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import obspy
 import glob
 from datetime import timedelta
+
+import obspy
 
 
 class TraceManager:

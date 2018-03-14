@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import collect_data.model as cd_model
 import pytest
+
+import collect_data.model as cd_model
 
 
 # FileManager tests
@@ -71,3 +72,4 @@ def test_merge_same_hour_with_start_at_59(trace_manager_start_at_59):
 def test_shapes(trace_manager_start_at_59, trace_manager_no_start_at_59):
     assert len(trace_manager_start_at_59.get_starttimes()) == len(trace_manager_start_at_59.traces)
     assert len(trace_manager_no_start_at_59.get_starttimes()) == len(trace_manager_no_start_at_59.traces)
+

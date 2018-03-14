@@ -1,33 +1,35 @@
 # -*- coding: utf-8 -*-
-from collect_data import model as cd_model
-from process_data import model as pd_model
+import time
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-import numpy as np
 from matplotlib.ticker import FormatStrFormatter, FixedLocator, FixedFormatter
-import time
+import numpy as np
+
 from root import root
+from collect_data import model as cd_model
+from process_data import model as pd_model
 
 # local settings
-# mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
-# data_folders = ['Station-falaise']  # 'Station-reference',
+mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
+data_folders = ['Station-falaise']  # 'Station-reference',
 
 # prod settings on local machine
 # mother_repository = '//SRV51-NETAPP2/Data_RS/Bonifacio/Bonifacio-bdf-definitif'
 
 # prod settings on EraPido
-mother_repository = '/media/Data_RS/Bonifacio/Bonifacio-bdf-definitif'
+# mother_repository = '/media/Data_RS/Bonifacio/Bonifacio-bdf-definitif'
 
-data_folders = ['Falaise-nov2016', 'Ref_nov2016',
-                'Falaise_dec2016', 'Ref_dec2016',
-                'Falaise_Janv2017', 'Ref_janv2017',
-                'Falaise_fev2017', 'Ref_fev2017',
-                'Falaise_mars2017', 'Ref_mars2017',
-                'Falaise_av2017', 'Ref_av2017',
-                'Falaise_mai2017', 'Ref_mai2017',
-                ]
+# data_folders = ['Falaise-nov2016', 'Ref_nov2016',
+#                 'Falaise_dec2016', 'Ref_dec2016',
+#                 'Falaise_Janv2017', 'Ref_janv2017',
+#                 'Falaise_fev2017', 'Ref_fev2017',
+#                 'Falaise_mars2017', 'Ref_mars2017',
+#                 'Falaise_av2017', 'Ref_av2017',
+#                 'Falaise_mai2017', 'Ref_mai2017',
+#                 ]
 
 # common settings
 directions_dict = {'C00': 'Z', 'C01': 'N', 'C02': 'E'}
@@ -40,7 +42,6 @@ reference_file_path = str(root/'tests/data_test/Falaise_nov2016/2016.11.06-23.59
 # Script:
 start_time = time.time()
 
-spectrograms = dict()
 trace_processor = pd_model.TraceProcessor(reference_file_path,
                                           decimate_factor=4,
                                           freqmin=0.5,
@@ -48,7 +49,7 @@ trace_processor = pd_model.TraceProcessor(reference_file_path,
 
 print("Saving frequencies file")
 save_file_f = f"{results_repository}/frequencies.txt"
-np.savetxt(save_file_f, trace_processor.filtred_and_decimated_ref_freqs, fmt='%1.4e')
+np.savetxt(save_file_f, trace_processor.filtred_and_decimated_ref_freqs, fmt='%1.10e')
 
 
 for directory in data_folders:

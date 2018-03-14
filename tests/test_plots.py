@@ -1,13 +1,15 @@
+# -*- coding: utf-8 -*-
+import os
+from datetime import datetime, timedelta
+
 import numpy as np
 # https://matplotlib.org/faq/howto_faq.html#matplotlib-in-a-web-application-server
 import matplotlib
 matplotlib.use('Agg')
-from datetime import datetime, timedelta
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.ticker as ticker
-import os
 
 
 def assert_same_image_as(path_reference):
@@ -140,6 +142,7 @@ def test_x_axis_as_date(trace_processor, short_trace, long_trace):
     plt.ylim(ymin=1, ymax=np.max(y))
 
     plt.colorbar(picture)
-    plt.tight_layout()
+
+    # plt.savefig('tests/figure_test/figure_x_axis_as_date_test.png', format='png')
 
     assert_same_image_as(path_reference='tests/figure_test/figure_x_axis_as_date_test.png')
