@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from obspy import read
 import pytest
+import numpy as np
 
 import process_data.model as pd_model
 
@@ -31,3 +32,16 @@ def trace_processor(reference_file_path, decimate_factor):
                                    decimate_factor,
                                    0.5,
                                    15)
+
+
+@pytest.fixture(scope='module')
+def short_psd(trace_processor, short_trace):
+    freqs = trace_processor.filtred_and_decimated_ref_freqs
+
+    trace = short_trace.copy()
+    trace_processor.filter_trace(trace)
+    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
+
+    sp = np.transpose(np.array([pxx]))
+
+    return freqs, sp

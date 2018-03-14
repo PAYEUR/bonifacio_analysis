@@ -12,17 +12,24 @@ from process_data import model as pd_model
 from weather_parsing import model as wp_model
 from root import root
 
-title = "Falaise_Z_November_2016"
+month_title = 'November_2016'
+title = f"Ratio_Z_{month_title}"
 
-sp_file_path = root/'results/novembre2016/Falaise-nov2016_Z_spectrogram.txt'
+sp_reference_file_path = root/'results/novembre2016/Ref_nov2016_Z_spectrogram.txt'
+sp_cliff_file_path = root/'results/novembre2016/Falaise-nov2016_Z_spectrogram.txt'
 freq_file_path = root/'results/frequencies.txt'
 
 start_time = datetime(year=2016, month=11, day=1, hour=0, minute=1)
 end_time = datetime(year=2016, month=11, day=30, hour=23, minute=59)
 
 # =================================================================================
-print('loading spectrogram')
-sp = pd_model.get_spectrogram(sp_file_path)
+print('loading cliff and ref spectrograms')
+sp_ref = pd_model.get_array(sp_reference_file_path)
+sp_cliff = pd_model.get_array(sp_cliff_file_path)
+
+print('computing ratio')
+ratio = pd_model.compute_ratio(sp_cliff, sp_ref, 0.05)
+
 freqs = pd_model.get_frequencies(freq_file_path)
 # need to add 1 freq, to increase plot speed (something weird within pcolorfast function)
 freqs = np.append(freqs, [freqs[-1]])
@@ -34,7 +41,7 @@ while t < end_time:
     t += timedelta(hours=1)
     datetime_list.append(t)
 
-x = np.arange(sp.shape[1]+1)
+x = np.arange(ratio.shape[1]+1)
 
 # list used in getting weather data
 date = start_time.date()
@@ -45,7 +52,7 @@ while date < end_time.date():
 
 
 print('getting weather data')
-data_file_name = root/f"weather_parsing/weather_data/{title}.f"
+data_file_name = root/f"weather_parsing/weather_data/{month_title}.weather"
 try:
     wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
 except FileNotFoundError:
@@ -65,9 +72,11 @@ fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4,
 
 ax1.pcolorfast(x,
                freqs,
-               sp,
+               ratio,
                cmap='jet',
-               norm=colors.LogNorm(vmin=1e3, vmax=1e6),  # logarithmic scaling
+			   vmin=1,
+			   vmax=15,
+               #norm=colors.LogNorm(vmin=1, vmax=10),  # log scaling
                )
 
 ax1.set_title(title)

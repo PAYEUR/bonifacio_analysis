@@ -90,34 +90,40 @@ def test_filter_trace(trace_processor):
     assert filter_test == reference_test
 
 
-def test_trace_processor_shapes(trace_processor, short_trace):
+def test_trace_processor_shapes(short_psd, short_trace):
     # test if frequencies, datetime_list and psd get the expected shape
     x = [short_trace.stats.starttime]
-    y = trace_processor.filtred_and_decimated_ref_freqs
+    freqs, sp = short_psd
 
-    trace = short_trace.copy()
-    trace_processor.filter_trace(trace)
-    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
-
-    sp = np.transpose(np.array([pxx]))
     # np.savetxt('freq.test', y, fmt='%1.10e')
     # np.savetxt('sp.test', sp, fmt='%1.4e')
 
-    assert(sp.shape[:2] == (len(y), len(x)))
+    assert(sp.shape[:2] == (len(freqs), len(x)))
 
 
-def test_get_spectrogram(trace_processor, short_trace):
-    trace = short_trace.copy()
-    trace_processor.filter_trace(trace)
-    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
-    ref_sp = np.transpose(np.array([pxx]))
-    test_sp = pd_model.get_spectrogram(str(root/'tests/data_test/sp.test'))
+def test_get_array(short_psd):
+    _, ref_sp = short_psd
+    test_sp = pd_model.get_array(str(root / 'tests/data_test/sp.test'))
 
     assert np.allclose(ref_sp, test_sp, rtol=1e-4)
 
 
-def test_get_frequencies(trace_processor):
-    ref_freqs = trace_processor.filtred_and_decimated_ref_freqs
+def test_get_frequencies(short_psd):
+    ref_freqs, _ = short_psd
     test_freqs = pd_model.get_frequencies(str(root/'tests/data_test/freq.test'))
 
     assert np.allclose(ref_freqs, test_freqs, rtol=1e-10)
+
+
+def test_quick_compute_ratio():
+    num = np.array([[1, 2], [3, 4], [0, 6]])
+    ratio = pd_model.compute_ratio(num, num, 0.1)
+    assert np.max(ratio) + 0.2 > 1 # 20% of difference
+    assert np.max(ratio) < 1
+
+
+def test_compute_ratio_real_data(short_psd):
+    _, ref_sp = short_psd
+    ratio = pd_model.compute_ratio(ref_sp, ref_sp, 0.05)
+    assert np.max(ratio) + 0.2 > 1  # 20% of difference
+    assert np.max(ratio) < 1

@@ -47,7 +47,6 @@ class TraceProcessor:
         :param trace: obspy.trace that is decimated
         :return: decimate trace and return frequencies and spectrum arrays
         """
-        # TODO: improve RAM utilisation of this
         trace.decimate(self.decimate_factor)
 
         p_xx, frequencies = psd(trace,
@@ -68,8 +67,8 @@ class TraceProcessor:
 
 def compute_ratio(numerator, denominator, water_level_ratio):
     """
-    :param numerator: stream, above
-    :param denominator: stream, below
+    :param numerator: np.array() above
+    :param denominator: np.array() below
     :param water_level_ratio: float, % of water level, between 0 and 1
     :return: np.array: numerator over denominator modified with water level
     """
@@ -78,7 +77,7 @@ def compute_ratio(numerator, denominator, water_level_ratio):
     return numerator/den2
 
 
-def get_spectrogram(sp_file_path):
+def get_array(sp_file_path):
     return pandas.read_csv(str(sp_file_path), sep=' ', header=None, dtype=np.float64).values
 
 
