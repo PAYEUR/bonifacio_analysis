@@ -7,13 +7,14 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.ticker import FormatStrFormatter, FixedLocator, FixedFormatter
+from scipy.ndimage import gaussian_filter
 
 from process_data import model as pd_model
 from weather_parsing import model as wp_model
 from root import root
 
 month_title = 'November_2016'
-title = f"Ratio_Z_{month_title}"
+title = f"Ratio_Z_{month_title}_filtred_5hz"
 
 sp_reference_file_path = root/'results/novembre2016/Ref_nov2016_Z_spectrogram.txt'
 sp_cliff_file_path = root/'results/novembre2016/Falaise-nov2016_Z_spectrogram.txt'
@@ -29,6 +30,7 @@ sp_cliff = pd_model.get_array(sp_cliff_file_path)
 
 print('computing ratio')
 ratio = pd_model.compute_ratio(sp_cliff, sp_ref, 0.05)
+ratio = gaussian_filter(ratio, sigma=(7,1))
 
 freqs = pd_model.get_frequencies(freq_file_path)
 # need to add 1 freq, to increase plot speed (something weird within pcolorfast function)
@@ -71,19 +73,19 @@ fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4,
                                          )
 
 ax1.pcolorfast(x,
-               freqs,
-               ratio,
+			   freqs,
+			   ratio,
                cmap='jet',
-			   vmin=1,
-			   vmax=15,
-               #norm=colors.LogNorm(vmin=1, vmax=10),  # log scaling
-               )
+               vmin=1,
+               vmax=5,
+			   #norm=colors.LogNorm(vmin=1, vmax=10),  # log scaling
+			   )
 
 ax1.set_title(title)
 ax1.set_ylabel('Freq (Hz)')
 
 # ---> set the frequencies boundaries here <---
-ax1.set_ylim([0.5, 8])
+ax1.set_ylim([5, 15])
 # ---> ################################### <---
 ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax1.yaxis.set_minor_formatter(FormatStrFormatter('%.1f'))
