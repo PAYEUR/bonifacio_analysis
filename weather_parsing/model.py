@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
-import urllib.request
+import time
+import random
+import pickle
+import itertools
+
+from urllib import request, error
 
 from bs4 import BeautifulSoup
 
@@ -32,7 +37,7 @@ class WeatherParser:
         self.rain_list = self.get_rain_list()
 
     def get_readable_object(self):
-        return urllib.request.urlopen(self.url)
+        return request.urlopen(self.url)
 
     def create_url(self):
 
@@ -70,3 +75,44 @@ class WeatherParser:
 
     def get_rain_list(self):
         return [float(elt.parent.text.split()[0]) for elt in self._soup.find_all('span', string='mm/1h')]
+
+
+def save_weather_parser(date_list, file_name):
+
+    # get weather_parsers from Http request
+    data = {}
+    for date in date_list:
+        print('connexion')
+        time.sleep(random.uniform(1, 2))
+        try:
+            wp = WeatherParser(date)
+        except error.HTTPError:
+            time.sleep(random.uniform(5, 10))
+            try:
+                wp = WeatherParser(date)
+            except error.HTTPError:
+                print('steuplaye!')
+                time.sleep(random.uniform(20, 30))
+                wp = WeatherParser(date)
+        finally:
+            data[date, 'temp'] = wp.temp_list
+            data[date, 'wind'] = wp.wind_list
+            data[date, 'wind_gust'] = wp.wind_gust_list
+            data[date, 'rain'] = wp.rain_list
+
+    # open weather parser under file_name as dict(key=date, value=weather_parser)
+    with open(file_name, 'wb') as f:
+        pickle.dump(data, f)
+
+
+def read_weather_parser_file(date_list, data_file_name):
+
+    with open(data_file_name, 'rb') as f:
+        data = pickle.load(f)
+
+        wind = list(itertools.chain(*[data[date, 'wind'] for date in date_list]))
+        rain = list(itertools.chain(*[data[date, 'rain'] for date in date_list]))
+        wind_gust = list(itertools.chain(*[data[date, 'wind_gust'] for date in date_list]))
+        temp = list(itertools.chain(*[data[date, 'temp'] for date in date_list]))
+
+    return wind, wind_gust, temp, rain

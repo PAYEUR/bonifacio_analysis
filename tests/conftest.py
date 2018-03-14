@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import process_data.model as pd_model
 from obspy import read
 import pytest
+
+import process_data.model as pd_model
 
 
 @pytest.fixture(scope='module')

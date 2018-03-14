@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import pandas
 from matplotlib.mlab import psd
 from obspy import read
 
@@ -76,3 +77,10 @@ def compute_ratio(numerator, denominator, water_level_ratio):
     den2 = denominator + water_level_ratio*np.mean(denominator)
     return numerator/den2
 
+
+def get_spectrogram(sp_file_path):
+    return pandas.read_csv(str(sp_file_path), sep=' ', header=None, dtype=np.float64).values
+
+
+def get_frequencies(freq_file_path):
+    return pandas.read_csv(str(freq_file_path), sep=' ', header=None, dtype=np.float64).values.flatten()
