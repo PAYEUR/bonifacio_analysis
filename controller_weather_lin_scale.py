@@ -24,7 +24,8 @@ end_time = datetime(year=2016, month=11, day=30, hour=23, minute=59)
 print('loading spectrogram')
 sp = pd_model.get_spectrogram(sp_file_path)
 freqs = pd_model.get_frequencies(freq_file_path)
-
+# need to add 1 freq, to increase plot speed (something weird within pcolorfast function)
+freqs = np.append(freqs, [freqs[-1]])
 
 # lists used in plotting
 datetime_list = [start_time]
@@ -78,25 +79,27 @@ ax1.set_ylim([0.5, 8])
 ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax1.yaxis.set_minor_formatter(FormatStrFormatter('%.1f'))
 
-name_list = [elt.strftime('%a %d %b') for elt in datetime_list]
-ax1.xaxis.set_major_locator(FixedLocator(x[::60]))
-ax1.xaxis.set_major_formatter(FixedFormatter(name_list[::60]))
-
 
 ax2.set_ylabel('Wind (km/h)')
-ax2.plot(np.arange(len(x)-1), wind)
+ax2.plot(np.arange(len(x)-1), wind, color='green')
 ax2.set_ylim([0, 80])
 
 ax3.set_ylabel('Temp (°C)')
-ax3.plot(np.arange(len(x)-1), temp)
-ax3.set_ylim([10, 20])
+ax3.plot(np.arange(len(x)-1), temp, color='red')
+ax3.set_ylim([5, 25])
 
 ax4.set_ylabel('Rain (mm/h)')
 # TODO: check why rain is len(x)-2 instead of len(x)-1
 ax4.plot(np.arange(len(x)-2), rain)
 ax4.set_ylim([0, 10])
 
+# setting shared x-axis
 plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+name_list = [elt.strftime('%a %d %b') for elt in datetime_list]
+ax1.xaxis.set_major_locator(FixedLocator(x[::60]))
+ax1.xaxis.set_major_formatter(FixedFormatter(name_list[::60]))
+ax1.set_xlim([x[0], x[-1]])
 plt.xticks(rotation=70)
-plt.tight_layout(pad=0.1, h_pad=0)
+
+plt.tight_layout(pad=1, h_pad=0)
 plt.savefig(f"{title}.png", format='png')
