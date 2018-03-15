@@ -108,29 +108,47 @@ def test_get_array(short_psd):
     assert np.allclose(ref_sp, test_sp, rtol=1e-4)
 
 
-def test_get_frequencies(short_psd):
+def test_get_frequencies(short_psd, ratio_manager):
     ref_freqs, _ = short_psd
-    test_freqs = pd_model.get_frequencies(str(root/'tests/data_test/freq.test'))
+    test_freqs = ratio_manager.frequencies
 
     assert np.allclose(ref_freqs, test_freqs, rtol=1e-10)
 
 
-def test_compute_ratio_fast():
-    num = np.array([[1, 2], [3, 4], [0, 6]])
-    ratio = pd_model.compute_ratio(num, num, 0.1)
-    assert np.max(ratio) + 0.2 > 1 # 20% of difference
+def test_compute_ratio(ratio_manager):
+    ratio = ratio_manager.ratio  # remember that ratio is supposed to be np.ones()
+    assert np.max(ratio) + 0.2 > 1  # less than 20% of difference
     assert np.max(ratio) < 1
 
 
-def test_compute_ratio_real_data(short_psd):
-    _, ref_sp = short_psd
-    ratio = pd_model.compute_ratio(ref_sp, ref_sp, 0.05)
-    assert np.max(ratio) + 0.2 > 1  # 20% of difference
-    assert np.max(ratio) < 1
+def test_ratio_manager_shapes(ratio_manager):
+    rm = ratio_manager
+    f = rm.frequencies
+    x = rm.datetime_list
+    assert rm.ratio.shape == (f.shape[0], len(x))
 
 
-def test_remove_noisy_columns_fast():
+def test_remove_noisy_columns_fast(ratio_manager):
     a = np.array([[0, 0, 1], [0, 0, 1]])
+    # replace ratio_manager.ratio by something easier
+    ratio_manager.ratio = a
     b = np.zeros(a.shape)
-    a_filtered = pd_model.remove_noisy_columns(a, 1)
-    assert np.array_equal(a_filtered, b)
+
+    ratio_manager.remove_noisy_columns(noise_level=1)
+
+    assert np.array_equal(ratio_manager.ratio, b)
+
+
+def test_smooth_fast(ratio_manager):
+    a = np.array([[0, 1, 2], [3, 4, 5]])
+    b1 = np.array([[0, 1, 1], [3, 4, 4]])
+    b2 = np.array([[1, 2, 3], [1, 2, 3]])
+
+    # replace ratio_manager.ratio by something easier
+    ratio_manager.ratio = a
+    ratio_manager.smooth(sigma=(0, 3))
+    assert np.array_equal(ratio_manager.ratio, b1)
+
+    ratio_manager.ratio = a
+    ratio_manager.smooth(sigma=(3, 0))
+    assert np.array_equal(ratio_manager.ratio, b2)

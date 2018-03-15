@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import numpy as np
 import matplotlib
@@ -7,7 +7,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.ticker import FormatStrFormatter, FixedLocator, FixedFormatter
-from scipy.ndimage import gaussian_filter
+
 
 from process_data import model as pd_model
 from root import root
@@ -24,33 +24,24 @@ end_time = datetime(year=2016, month=11, day=30, hour=23, minute=59)
 
 # =================================================================================
 print('loading cliff and ref spectrograms')
-sp_ref = pd_model.get_array(sp_reference_file_path)
-sp_cliff = pd_model.get_array(sp_cliff_file_path)
+rm = pd_model.RatioManager(sp_cliff_file_path,
+                           sp_reference_file_path,
+                           freq_file_path,
+                           start_time,
+                           end_time,
+                           )
 
-print('computing ratio')
-# TODO: rewrite ratio calls into a RatioManager class
-# computing ratio
-ratio = pd_model.compute_ratio(sp_cliff, sp_ref, 0.05)
+print('filtering ratio')
 # replace noisy columns
-ratio = pd_model.remove_noisy_columns(ratio, 10)
-
+rm.remove_noisy_columns(10)
 # filter final data to improve readability
-ratio = gaussian_filter(ratio, sigma=(7, 1))
+rm.smooth((7, 1))
 
-# END TODO
-
-freqs = pd_model.get_frequencies(freq_file_path)
-# need to add 1 freq, to increase plot speed (something weird within pcolorfast function)
-freqs = np.append(freqs, [freqs[-1]])
+ratio = rm.ratio
 
 # lists used in plotting
-datetime_list = [start_time]
-t = start_time
-while t < end_time:
-    t += timedelta(hours=1)
-    datetime_list.append(t)
-
-x = np.arange(ratio.shape[1]+1)
+freqs = np.append(rm.frequencies, rm.frequencies[-1])
+x = np.arange(len(rm.datetime_list) + 1)
 
 
 print('plotting')
@@ -77,7 +68,7 @@ ax1.set_ylim([0.5, 8])
 ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax1.yaxis.set_minor_formatter(FormatStrFormatter('%.1f'))
 
-name_list = [elt.strftime('%a %d %b') for elt in datetime_list]
+name_list = [elt.strftime('%a %d %b') for elt in rm.datetime_list]
 ax1.xaxis.set_major_locator(FixedLocator(x[::60]))
 ax1.xaxis.set_major_formatter(FixedFormatter(name_list[::60]))
 ax1.set_xlim([x[0], x[-1]])
