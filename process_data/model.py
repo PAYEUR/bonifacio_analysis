@@ -83,3 +83,18 @@ def get_array(sp_file_path):
 
 def get_frequencies(freq_file_path):
     return pandas.read_csv(str(freq_file_path), sep=' ', header=None, dtype=np.float64).values.flatten()
+
+
+def remove_noisy_columns(ratio, noise_level):
+    """
+    remove hours that are too noisy (assume first column ok) and replace with previous column
+    :param ratio 2D np.array
+    :param noise_level float, noise threshold above mean noise
+    :return: ratio
+    """
+    i = 1
+    while i < ratio.shape[1]:
+        if np.mean(ratio[:, i]) > noise_level * np.mean(ratio):
+            ratio[:, i] = ratio[:, i - 1]
+        i += 1
+    return ratio
