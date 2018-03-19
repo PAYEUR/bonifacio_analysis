@@ -90,34 +90,65 @@ def test_filter_trace(trace_processor):
     assert filter_test == reference_test
 
 
-def test_trace_processor_shapes(trace_processor, short_trace):
+def test_trace_processor_shapes(short_psd, short_trace):
     # test if frequencies, datetime_list and psd get the expected shape
     x = [short_trace.stats.starttime]
-    y = trace_processor.filtred_and_decimated_ref_freqs
+    freqs, sp = short_psd
 
-    trace = short_trace.copy()
-    trace_processor.filter_trace(trace)
-    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
-
-    sp = np.transpose(np.array([pxx]))
     # np.savetxt('freq.test', y, fmt='%1.10e')
     # np.savetxt('sp.test', sp, fmt='%1.4e')
 
-    assert(sp.shape[:2] == (len(y), len(x)))
+    assert(sp.shape[:2] == (len(freqs), len(x)))
 
 
-def test_get_spectrogram(trace_processor, short_trace):
-    trace = short_trace.copy()
-    trace_processor.filter_trace(trace)
-    pxx = trace_processor.compute_decimated_spectrum(trace)[0]
-    ref_sp = np.transpose(np.array([pxx]))
-    test_sp = pd_model.get_spectrogram(str(root/'tests/data_test/sp.test'))
+def test_get_array(short_psd):
+    _, ref_sp = short_psd
+    test_sp = pd_model.get_array(str(root / 'tests/data_test/sp.test'))
 
     assert np.allclose(ref_sp, test_sp, rtol=1e-4)
 
 
-def test_get_frequencies(trace_processor):
-    ref_freqs = trace_processor.filtred_and_decimated_ref_freqs
-    test_freqs = pd_model.get_frequencies(str(root/'tests/data_test/freq.test'))
+def test_get_frequencies(short_psd, ratio_manager):
+    ref_freqs, _ = short_psd
+    test_freqs = ratio_manager.frequencies
 
     assert np.allclose(ref_freqs, test_freqs, rtol=1e-10)
+
+
+def test_compute_ratio(ratio_manager):
+    ratio = ratio_manager.ratio  # remember that ratio is supposed to be np.ones()
+    assert np.max(ratio) + 0.2 > 1  # less than 20% of difference
+    assert np.max(ratio) < 1
+
+
+def test_ratio_manager_shapes(ratio_manager):
+    rm = ratio_manager
+    f = rm.frequencies
+    x = rm.datetime_list
+    assert rm.ratio.shape == (f.shape[0], len(x))
+
+
+def test_remove_noisy_columns_fast(ratio_manager):
+    a = np.array([[0, 0, 1], [0, 0, 1]])
+    # replace ratio_manager.ratio by something easier
+    ratio_manager.ratio = a
+    b = np.zeros(a.shape)
+
+    ratio_manager.remove_noisy_columns(noise_level=1)
+
+    assert np.array_equal(ratio_manager.ratio, b)
+
+
+def test_smooth_fast(ratio_manager):
+    a = np.array([[0, 1, 2], [3, 4, 5]])
+    b1 = np.array([[0, 1, 1], [3, 4, 4]])
+    b2 = np.array([[1, 2, 3], [1, 2, 3]])
+
+    # replace ratio_manager.ratio by something easier
+    ratio_manager.ratio = a
+    ratio_manager.smooth(sigma=(0, 3))
+    assert np.array_equal(ratio_manager.ratio, b1)
+
+    ratio_manager.ratio = a
+    ratio_manager.smooth(sigma=(3, 0))
+    assert np.array_equal(ratio_manager.ratio, b2)
