@@ -91,12 +91,14 @@ class RatioManager:
         self.datetime_list = self.get_datetime_list()
         self.ratio = self.compute_ratio(0.05)
 
+    # TODO: remove get_frequencies from inside RatioManager
     def get_frequencies(self):
         return pandas.read_csv(str(self.frequencies_file_path),
                                sep=' ',
                                header=None,
                                dtype=np.float64).values.flatten()
 
+    # TODO: remove get_frequencies from inside RatioManager?
     def get_datetime_list(self):
 
         datetime_list = []
