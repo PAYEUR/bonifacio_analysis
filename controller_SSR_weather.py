@@ -21,6 +21,7 @@ end_time = datetime(year=2016, month=11, day=30, hour=23, minute=59)
 freq_file_path = root/'results/frequencies.txt'
 
 # =================================================================================
+# TODO: parallelize this
 ratio_list = []
 for direction in ('Z', 'N', 'E'):
     sp_reference_file_path = root / f'results/novembre2016/Ref_nov2016_{direction}_spectrogram.txt'
@@ -42,7 +43,7 @@ for direction in ('Z', 'N', 'E'):
 
     ratio_list.append(rm.ratio)
 
-
+# TODO: parallelize this
 print('getting weather data')
 date = start_time.date()
 date_list = [date]
@@ -110,7 +111,7 @@ ax1.set_title(title)
 
 ax4.set_ylabel('Wind (km/h)')
 ax4.plot(np.arange(len(x)-1), wind, color='green')
-ax4.set_ylim([0, 80])
+ax4.set_ylim([0, 90])
 
 ax5.set_ylabel('Temp (°C)')
 ax5.plot(np.arange(len(x)-1), temp, color='red')
@@ -118,7 +119,10 @@ ax5.set_ylim([0, 30])
 
 ax6.set_ylabel('Rain (mm/h)')
 # TODO: check why rain is len(x)-2 instead of len(x)-1
-ax6.plot(np.arange(len(x)-2), rain)
+try:
+    ax6.plot(np.arange(len(x)-1), rain)
+except ValueError:
+    ax6.plot(np.arange(len(x)-2), rain)
 ax6.set_ylim([0, 15])
 
 # setting shared x-axis
