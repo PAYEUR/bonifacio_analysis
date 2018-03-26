@@ -20,6 +20,7 @@ start_time = datetime(year=2016, month=11, day=1, hour=0, minute=1)
 end_time = datetime(year=2016, month=11, day=30, hour=23, minute=59)
 freq_file_path = root/'results/frequencies.txt'
 
+frequencies_boundaries = [0.5, 15]
 # =================================================================================
 # TODO: parallelize this
 ratio_list = []
@@ -85,7 +86,7 @@ fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(nrows=6,
                                                    gridspec_kw={'height_ratios': [3, 3, 3, 1, 1, 1]},
                                                    figsize=(7, 15)
                                                    )
-
+# plotting spectrograms
 for ax, ratio, direction in zip((ax1, ax2, ax3),
                                 ratio_list,
                                 ('Z', 'N', 'E')):
@@ -99,31 +100,28 @@ for ax, ratio, direction in zip((ax1, ax2, ax3),
                   )
 
     ax.set_ylabel(f'Freq (Hz), direction {direction}')
-
-    # ---> set the frequencies boundaries here <---
-    ax.set_ylim([0.5, 15])
-    # ---> ################################### <---
-    # ---> ################################### <---
+    ax.set_ylim(frequencies_boundaries)
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     ax.yaxis.set_minor_formatter(FormatStrFormatter('%.1f'))
 
-ax1.set_title(title)
 
-ax4.set_ylabel('Wind (km/h)')
-ax4.plot(np.arange(len(x)-1), wind, color='green')
-ax4.set_ylim([0, 90])
+# Plotting weather data
+# CAUTION: because of obscure data parsing reasons, len(rain), len(temp) and len(wind)
+#   may not be equal to len(x)
+for ax, title, weather_data, color, scale in zip((ax4, ax5, ax6),
+                                                 ('Wind (km/h)', 'Temp (°C)', 'Rain (mm/h)'),
+                                                 (wind, temp, rain),
+                                                 ('green', 'red', 'blue'),
+                                                 ([0, 90], [0, 30], [0, 15])
+                                                 ):
+    ax.set_ylabel(title)
+    try:
+        ax.plot(np.arange(len(x)-1), weather_data, color=color)
+    except ValueError:
+        print(f'Length of wind array is {len(weather_data)}, {len(x_array)-1} was expected')
+        ax4.plot(np.arange(len(weather_data)), weather_data, color='color')
+    ax.set_ylim(scale)
 
-ax5.set_ylabel('Temp (°C)')
-ax5.plot(np.arange(len(x)-1), temp, color='red')
-ax5.set_ylim([0, 30])
-
-ax6.set_ylabel('Rain (mm/h)')
-# TODO: check why rain is len(x)-2 instead of len(x)-1
-try:
-    ax6.plot(np.arange(len(x)-1), rain)
-except ValueError:
-    ax6.plot(np.arange(len(x)-2), rain)
-ax6.set_ylim([0, 15])
 
 # setting shared x-axis
 plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
@@ -132,6 +130,9 @@ ax1.xaxis.set_major_locator(FixedLocator(x[::60]))
 ax1.xaxis.set_major_formatter(FixedFormatter(name_list[::60]))
 ax1.set_xlim([x[0], x[-1]])
 plt.xticks(rotation=70)
+
+
+ax1.set_title(title)
 
 plt.tight_layout(pad=1, h_pad=0)
 plt.savefig(f"{title}.png", format='png')
