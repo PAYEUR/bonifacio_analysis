@@ -118,7 +118,7 @@ for ax, title, weather_data, color, scale in zip((ax4, ax5, ax6),
     try:
         ax.plot(np.arange(len(x)-1), weather_data, color=color)
     except ValueError:
-        print(f'Length of wind array is {len(weather_data)}, {len(x_array)-1} was expected')
+        print(f'Length of wind array is {len(weather_data)}, {len(x)-1} was expected')
         ax4.plot(np.arange(len(weather_data)), weather_data, color='color')
     ax.set_ylim(scale)
 
