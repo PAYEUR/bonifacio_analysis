@@ -100,6 +100,8 @@ class WeatherParserManager:
     def data_file_name(self):
         return root/f"weather_parsing/weather_data/{self.month_name}.weather"
 
+    # TODO: asyncio --> maybe in controller?
+    # TODO: // this --> directly on date loop?
     def save_weather_parser(self):
 
         date_list = self.date_list

@@ -47,19 +47,9 @@ for direction in ('Z', 'N', 'E'):
 
 # TODO: parallelize this and include it in WeatherParserManager class
 print('getting weather data')
-date = start_time.date()
-date_list = [date]
-while date < end_time.date():
-    date += timedelta(days=1)
-    date_list.append(date)
+wp_manager = wp_model.WeatherParserManager(start_time, end_time, month_title)
+wind, wind_gust, temp, rain = wp_manager.get_weather_data()
 
-data_file_name = root/f"weather_parsing/weather_data/{month_title}.weather"
-try:
-    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
-except FileNotFoundError:
-    wp_model.save_weather_parser(date_list, data_file_name)
-    print('data saved')
-    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
 
 
 print('plotting')
