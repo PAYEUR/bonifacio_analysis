@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 import re
 import time
+import datetime
 import random
 import pickle
 import itertools
-
 from urllib import request, error
 
+import numpy as np
 from bs4 import BeautifulSoup
+
+from root import root
 
 MONTH_DICT = {1: 'janvier',
               2: 'fevrier',
@@ -77,42 +80,84 @@ class WeatherParser:
         return [float(elt.parent.text.split()[0]) for elt in self._soup.find_all('span', string='mm/1h')]
 
 
-def save_weather_parser(date_list, file_name):
+class WeatherParserManager:
 
-    # get weather_parsers from Http request
-    data = {}
-    for date in date_list:
-        print('connexion')
-        time.sleep(random.uniform(1, 2))
-        try:
-            wp = WeatherParser(date)
-        except error.HTTPError:
-            time.sleep(random.uniform(5, 10))
+    def __init__(self, start_time, end_time, month_name):
+        self.start_time = start_time
+        self.end_time = end_time
+        self.month_name = month_name
+
+    @property
+    def date_list(self):
+        date = self.start_time.date()
+        date_list = [date]
+        while date < self.end_time.date():
+            date += datetime.timedelta(days=1)
+            date_list.append(date)
+        return date_list
+
+    @property
+    def data_file_name(self):
+        return root/f"weather_parsing/weather_data/{self.month_name}.weather"
+
+    def save_weather_parser(self):
+
+        date_list = self.date_list
+        file_name = self.data_file_name
+
+        # get weather_parsers from Http request
+        data = {}
+        for date in date_list:
+            print('connexion')
+            time.sleep(random.uniform(1, 2))
             try:
                 wp = WeatherParser(date)
             except error.HTTPError:
-                print('steuplaye!')
-                time.sleep(random.uniform(20, 30))
-                wp = WeatherParser(date)
-        finally:
-            data[date, 'temp'] = wp.temp_list
-            data[date, 'wind'] = wp.wind_list
-            data[date, 'wind_gust'] = wp.wind_gust_list
-            data[date, 'rain'] = wp.rain_list
+                time.sleep(random.uniform(5, 10))
+                try:
+                    wp = WeatherParser(date)
+                except error.HTTPError:
+                    print('Waiting a bit more')
+                    time.sleep(random.uniform(20, 30))
+                    wp = WeatherParser(date)
+            finally:
+                data[date, 'temp'] = wp.temp_list
+                data[date, 'wind'] = wp.wind_list
+                data[date, 'wind_gust'] = wp.wind_gust_list
+                data[date, 'rain'] = wp.rain_list
 
-    # open weather parser under file_name as dict(key=date, value=weather_parser)
-    with open(file_name, 'wb') as f:
-        pickle.dump(data, f)
+        # open weather parser under file_name as dict(key=date, value=weather_parser)
+        with open(file_name, 'wb') as f:
+            pickle.dump(data, f)
+
+    def read_weather_parser_file(self):
+
+        date_list = self.date_list
+        data_file_name = self.data_file_name
+        with open(data_file_name, 'rb') as f:
+            data = pickle.load(f)
+
+            wind = list(itertools.chain(*[data[date, 'wind'] for date in date_list]))
+            rain = list(itertools.chain(*[data[date, 'rain'] for date in date_list]))
+            wind_gust = list(itertools.chain(*[data[date, 'wind_gust'] for date in date_list]))
+            temp = list(itertools.chain(*[data[date, 'temp'] for date in date_list]))
+
+        return wind, wind_gust, temp, rain
+
+    def get_weather_data(self):
+
+        try:
+            wind, wind_gust, temp, rain = self.read_weather_parser_file()
+        except FileNotFoundError:
+            self.save_weather_parser()
+            print('data saved')
+            wind, wind_gust, temp, rain = self.read_weather_parser_file()
+        return wind, wind_gust, temp, rain
 
 
-def read_weather_parser_file(date_list, data_file_name):
-
-    with open(data_file_name, 'rb') as f:
-        data = pickle.load(f)
-
-        wind = list(itertools.chain(*[data[date, 'wind'] for date in date_list]))
-        rain = list(itertools.chain(*[data[date, 'rain'] for date in date_list]))
-        wind_gust = list(itertools.chain(*[data[date, 'wind_gust'] for date in date_list]))
-        temp = list(itertools.chain(*[data[date, 'temp'] for date in date_list]))
-
-    return wind, wind_gust, temp, rain
+def create_x_abscissa(datetime_list, weather_data):
+    if len(datetime_list) == len(weather_data):
+        return np.arange(len(datetime_list))
+    else:
+        print(f'Length of weather array is {len(weather_data)}, {len(datetime_list)} was expected')
+        return np.arange(len(weather_data))

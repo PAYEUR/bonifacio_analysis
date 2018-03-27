@@ -44,7 +44,8 @@ for direction in ('Z', 'N', 'E'):
 
     ratio_list.append(rm.ratio)
 
-# TODO: parallelize this
+
+# TODO: parallelize this and include it in WeatherParserManager class
 print('getting weather data')
 date = start_time.date()
 date_list = [date]
@@ -115,11 +116,8 @@ for ax, title, weather_data, color, scale in zip((ax4, ax5, ax6),
                                                  ([0, 90], [0, 30], [0, 15])
                                                  ):
     ax.set_ylabel(title)
-    try:
-        ax.plot(np.arange(len(x)-1), weather_data, color=color)
-    except ValueError:
-        print(f'Length of wind array is {len(weather_data)}, {len(x)-1} was expected')
-        ax4.plot(np.arange(len(weather_data)), weather_data, color='color')
+    x_abscissa = wp_model.create_x_abscissa(datetime_list, weather_data)
+    ax.plot(x_abscissa, weather_data, color=color)
     ax.set_ylim(scale)
 
 
