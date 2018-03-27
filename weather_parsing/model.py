@@ -98,7 +98,7 @@ class WeatherParserManager:
 
     @property
     def data_file_name(self):
-        return root/f"weather_parsing/weather_data/{self.month_name}.weather"
+        return str(root/f"weather_parsing/weather_data/{self.month_name}.weather")
 
     # TODO: asyncio --> maybe in controller?
     # TODO: // this --> directly on date loop?
@@ -158,8 +158,17 @@ class WeatherParserManager:
 
 
 def create_x_abscissa(datetime_list, weather_data):
+    """
+    This function checks if len(weather_data) is the same as len(datetime_list) as it supposed to be.
+    If not, raise a information message
+    :param datetime_list: list of datetimes
+    :param weather_data: list of integers
+    :return: X axis fitted to the retrieved weather data, to be plotted easily.
+    """
     if len(datetime_list) == len(weather_data):
         return np.arange(len(datetime_list))
     else:
-        print(f'Length of weather array is {len(weather_data)}, {len(datetime_list)} was expected')
+        print(f'Length of weather array is {len(weather_data)}, {len(datetime_list)} was expected.'
+              f'There have beeen a pb during html parsing.'
+              f'X-axis has been modified to fit the data ')
         return np.arange(len(weather_data))

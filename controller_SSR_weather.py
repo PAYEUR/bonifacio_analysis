@@ -51,7 +51,6 @@ wp_manager = wp_model.WeatherParserManager(start_time, end_time, month_title)
 wind, wind_gust, temp, rain = wp_manager.get_weather_data()
 
 
-
 print('plotting')
 # lists used in plotting
 freqs = pandas.read_csv(str(freq_file_path),
@@ -97,8 +96,6 @@ for ax, ratio, direction in zip((ax1, ax2, ax3),
 
 
 # Plotting weather data
-# CAUTION: because of obscure data parsing reasons, len(rain), len(temp) and len(wind)
-#   may not be equal to len(x)
 for ax, title, weather_data, color, scale in zip((ax4, ax5, ax6),
                                                  ('Wind (km/h)', 'Temp (°C)', 'Rain (mm/h)'),
                                                  (wind, temp, rain),
@@ -106,6 +103,9 @@ for ax, title, weather_data, color, scale in zip((ax4, ax5, ax6),
                                                  ([0, 90], [0, 30], [0, 15])
                                                  ):
     ax.set_ylabel(title)
+    # CAUTION: because of unexplained data parsing reasons, len(rain), len(temp) and len(wind)
+    #   may not be equal to len(x)
+    # so one need to call create_x_abcissa function
     x_abscissa = wp_model.create_x_abscissa(datetime_list, weather_data)
     ax.plot(x_abscissa, weather_data, color=color)
     ax.set_ylim(scale)
