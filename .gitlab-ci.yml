@@ -24,18 +24,15 @@ stages:
 
 # py.test doesn't work, because collect_data not in python path
 
-test_weather:
-  stage: test
+test:
+  stage: test_weather
   script: python -m pytest tests/test_weather_parsing.py
 
-test_collect_data:
-  stage: test
+  stage: test_collect_data
   script: python -m pytest tests/test_cd.py
 
-test_process_data:
-  stage: test
+  stage: test_process_data
   script: python -m pytest tests/test_pd.py
 
-test_plots:
-  stage: test
+  stage: test_plots
   script: python -m pytest tests/test_plots.py
