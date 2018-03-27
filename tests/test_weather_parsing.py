@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import pytest
 import numpy as np
 
-import weather_parsing.model as mp_model
+import weather_parsing.model as wp_model
 from root import root
 
 
@@ -27,9 +27,9 @@ def weather_parser(date_test):
     # overwrite weather_parser._soup to avoid http request and fill it with saved html file instead
     # 1) create a new method
     def new_readable_object(self):
-        return open(str(root/'tests/data_test/test.html'), 'r')
+        return open(root / 'tests/data_test/test.html', 'r')
     # 2) create a new class based on the classical one
-    NewWeatherParser = mp_model.WeatherParser
+    NewWeatherParser = wp_model.WeatherParser
     # 3) overwrite the method that generates http request
     NewWeatherParser.get_readable_object = new_readable_object
     # 4) instantiate a new object
@@ -82,11 +82,11 @@ def test_create_x_abscissa(weather_parser):
     weather_data = weather_parser.temp_list
     weather_data2 = weather_data[:-2]
 
-    assert np.array_equal(mp_model.create_x_abscissa(datetime_list, weather_data),
+    assert np.array_equal(wp_model.create_x_abscissa(datetime_list, weather_data),
                           np.arange(len(datetime_list)))
 
-    assert np.array_equal(mp_model.create_x_abscissa(datetime_list, weather_data2),
+    assert np.array_equal(wp_model.create_x_abscissa(datetime_list, weather_data2),
                           np.arange(len(weather_data2)))
 
-    assert np.array_equal(mp_model.create_x_abscissa(datetime_list, weather_data2),
+    assert np.array_equal(wp_model.create_x_abscissa(datetime_list, weather_data2),
                           np.arange(len(datetime_list))) is False

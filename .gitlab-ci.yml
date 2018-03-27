@@ -17,10 +17,25 @@ before_script:
   - pip install pandas
 
 stages:
-  - test
+  - test_weather
+  - test_collect_data
+  - test_process_data
+  - test_plots
 
-test:
+# py.test doesn't work, because collect_data not in python path
+
+test_weather:
   stage: test
-  # py.test doesn't work, because collect_data not in python path
-  script: python -m pytest tests/
+  script: python -m pytest tests/test_weather_parsing.py
 
+test_collect_data:
+  stage: test
+  script: python -m pytest tests/test_cd.py
+
+test_process_data:
+  stage: test
+  script: python -m pytest tests/test_pd.py
+
+test_plots:
+  stage: test
+  script: python -m pytest tests/test_plots.py
