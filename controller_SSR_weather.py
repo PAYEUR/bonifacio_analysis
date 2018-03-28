@@ -45,7 +45,7 @@ for direction in ('Z', 'N', 'E'):
     ratio_list.append(rm.ratio)
 
 
-# TODO: parallelize this and include it in WeatherParserManager class
+# TODO: asynchronize this
 print('getting weather data')
 wp_manager = wp_model.WeatherParserManager(start_time, end_time, month_title)
 wind, wind_gust, temp, rain = wp_manager.get_weather_data()
