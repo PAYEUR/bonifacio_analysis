@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import date, datetime
 
-from bs4 import BeautifulSoup
 import pytest
 import numpy as np
 
@@ -27,7 +26,7 @@ def weather_parser(date_test):
     # overwrite weather_parser._soup to avoid http request and fill it with saved html file instead
     # 1) create a new method
     def new_readable_object(self):
-        return open(root / 'tests/data_test/test.html', 'r')
+        return open(str(root/'tests/data_test/test.html'), 'r')
     # 2) create a new class based on the classical one
     NewWeatherParser = wp_model.WeatherParser
     # 3) overwrite the method that generates http request
