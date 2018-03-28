@@ -29,7 +29,7 @@ class WeatherParser:
 
         self.date = date
         self.url = self.create_url()
-        self._soup = BeautifulSoup(self.get_readable_object()) #, 'lxml')
+        self._soup = BeautifulSoup(self.get_readable_object(), 'html.parser')
         self._temp_spans = self.get_temp_spans()
         self._wind_spans = self.get_wind_spans()
         self._time_slots_spans = self.get_time_slots_spans()
