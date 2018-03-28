@@ -1,38 +1,41 @@
 image: "python:3.6"
 
-before_script:
-  - apt update
-  - python --version
-  # pip install -r requirements.txt doesn't work
-  # need to install packages by hand
-  - apt -y install python-numpy
-                   python-scipy
-                   python-matplotlib
-                   python-lxml
-                   python-sqlalchemy
-                   python-suds
-  - pip install obspy
-  - pip install pytest
-  - pip install beautifulsoup4
-  - pip install pandas
-
 stages:
-  - test_weather
-  - test_collect_data
-  - test_process_data
-  - test_plots
+  - deploy
+  - test
+
+build:
+  stage: deploy
+  script:
+    - apt update
+    - python --version
+    # pip install -r requirements.txt doesn't work
+    # need to install packages by hand
+    - apt -y install python-numpy
+                     python-scipy
+                     python-matplotlib
+                     python-lxml
+                     python-sqlalchemy
+                     python-suds
+    - pip install obspy
+    - pip install pytest
+    - pip install beautifulsoup4
+    - pip install pandas
 
 # py.test doesn't work, because collect_data not in python path
 
-test:
-  stage: test_weather
+test_weather:
+  stage: test
   script: python -m pytest tests/test_weather_parsing.py
 
-  stage: test_collect_data
+test_collect_data:
+  stage: test
   script: python -m pytest tests/test_cd.py
 
-  stage: test_process_data
+test_process_data:
+  stage: test
   script: python -m pytest tests/test_pd.py
 
-  stage: test_plots
+test_plots:
+  stage: test
   script: python -m pytest tests/test_plots.py
