@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+from datetime import date, datetime
 
-from bs4 import BeautifulSoup
 import pytest
+import numpy as np
+from bs4 import BeautifulSoup
 
-import weather_parsing.model as mp_model
+import weather_parsing.model as wp_model
 from root import root
 
+
+# function that create http request not invoked.
 
 @pytest.fixture()
 def url_test():
@@ -20,8 +23,18 @@ def date_test():
 
 @pytest.fixture()
 def weather_parser(date_test):
-    wp = mp_model.WeatherParser(date_test)
-    wp._soup = BeautifulSoup(open(root/'tests/data_test/test.html', 'r'), 'lxml')
+
+    # overwrite weather_parser._soup to avoid http request and fill it with saved html file instead
+    # 1) path of the html saved file
+    html_file_path = str(root/'tests/data_test/test.html')
+    # 2) create a new class based on the classical one
+    NewWeatherParser = wp_model.WeatherParser
+    # 3) overwrite the argument that generates http request
+    with open(html_file_path, 'r') as f:
+        NewWeatherParser._soup = BeautifulSoup(f, 'html.parser')
+    # 4) instantiate a new object
+    wp = NewWeatherParser(date_test)
+
     return wp
 
 
@@ -62,3 +75,21 @@ def test_rain(weather_parser):
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     assert weather_parser.rain_list == rain_ref
+
+
+def test_create_x_abscissa(weather_parser):
+    # ensure that plt(x, weather_data) is always possible
+    # where x = create_x_abscissa()
+    # and weather_data of different length
+    datetime_list = [datetime(year=2016, month=11, day=3, hour=i) for i in range(0, 24)]
+    weather_data = weather_parser.temp_list
+    weather_data2 = weather_data[:-2]
+
+    assert np.array_equal(wp_model.create_x_abscissa(datetime_list, weather_data),
+                          np.arange(len(datetime_list)))
+
+    assert np.array_equal(wp_model.create_x_abscissa(datetime_list, weather_data2),
+                          np.arange(len(weather_data2)))
+
+    assert np.array_equal(wp_model.create_x_abscissa(datetime_list, weather_data2),
+                          np.arange(len(datetime_list))) is False

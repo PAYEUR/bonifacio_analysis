@@ -20,6 +20,7 @@ start_time = datetime(year=2016, month=11, day=1, hour=0, minute=1)
 end_time = datetime(year=2016, month=11, day=30, hour=23, minute=59)
 freq_file_path = root/'results/frequencies.txt'
 
+frequencies_boundaries = [0.5, 15]
 # =================================================================================
 # TODO: parallelize this
 ratio_list = []
@@ -43,21 +44,11 @@ for direction in ('Z', 'N', 'E'):
 
     ratio_list.append(rm.ratio)
 
-# TODO: parallelize this
-print('getting weather data')
-date = start_time.date()
-date_list = [date]
-while date < end_time.date():
-    date += timedelta(days=1)
-    date_list.append(date)
 
-data_file_name = root/f"weather_parsing/weather_data/{month_title}.weather"
-try:
-    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
-except FileNotFoundError:
-    wp_model.save_weather_parser(date_list, data_file_name)
-    print('data saved')
-    wind, wind_gust, temp, rain = wp_model.read_weather_parser_file(date_list, data_file_name)
+# TODO: asynchronize this
+print('getting weather data')
+wp_manager = wp_model.WeatherParserManager(start_time, end_time, month_title)
+wind, wind_gust, temp, rain = wp_manager.get_weather_data()
 
 
 print('plotting')
@@ -85,7 +76,7 @@ fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(nrows=6,
                                                    gridspec_kw={'height_ratios': [3, 3, 3, 1, 1, 1]},
                                                    figsize=(7, 15)
                                                    )
-
+# plotting spectrograms
 for ax, ratio, direction in zip((ax1, ax2, ax3),
                                 ratio_list,
                                 ('Z', 'N', 'E')):
@@ -99,31 +90,27 @@ for ax, ratio, direction in zip((ax1, ax2, ax3),
                   )
 
     ax.set_ylabel(f'Freq (Hz), direction {direction}')
-
-    # ---> set the frequencies boundaries here <---
-    ax.set_ylim([0.5, 15])
-    # ---> ################################### <---
-    # ---> ################################### <---
+    ax.set_ylim(frequencies_boundaries)
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     ax.yaxis.set_minor_formatter(FormatStrFormatter('%.1f'))
 
-ax1.set_title(title)
+plot_data = [(ax4, ax5, ax6),
+             ('Wind (km/h)', 'Temp (°C)', 'Rain (mm/h)'),
+             (wind, temp, rain),
+             ('green', 'red', 'blue'),
+             ([0, 90], [0, 30], [0, 15]),
+             ]
 
-ax4.set_ylabel('Wind (km/h)')
-ax4.plot(np.arange(len(x)-1), wind, color='green')
-ax4.set_ylim([0, 90])
+# Plotting weather data
+for ax, title, weather_data, color, scale in zip(plot_data):
+    ax.set_ylabel(title)
+    # CAUTION: because of unexplained data parsing reasons, len(rain), len(temp) and len(wind)
+    #   may not be equal to len(x)
+    # so one need to call create_x_abcissa function
+    x_abscissa = wp_model.create_x_abscissa(datetime_list, weather_data)
+    ax.plot(x_abscissa, weather_data, color=color)
+    ax.set_ylim(scale)
 
-ax5.set_ylabel('Temp (°C)')
-ax5.plot(np.arange(len(x)-1), temp, color='red')
-ax5.set_ylim([0, 30])
-
-ax6.set_ylabel('Rain (mm/h)')
-# TODO: check why rain is len(x)-2 instead of len(x)-1
-try:
-    ax6.plot(np.arange(len(x)-1), rain)
-except ValueError:
-    ax6.plot(np.arange(len(x)-2), rain)
-ax6.set_ylim([0, 15])
 
 # setting shared x-axis
 plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
@@ -132,6 +119,9 @@ ax1.xaxis.set_major_locator(FixedLocator(x[::60]))
 ax1.xaxis.set_major_formatter(FixedFormatter(name_list[::60]))
 ax1.set_xlim([x[0], x[-1]])
 plt.xticks(rotation=70)
+
+
+ax1.set_title(title)
 
 plt.tight_layout(pad=1, h_pad=0)
 plt.savefig(f"{title}.png", format='png')
