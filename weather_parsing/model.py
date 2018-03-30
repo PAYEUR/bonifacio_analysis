@@ -166,10 +166,9 @@ def create_x_abscissa(datetime_list, weather_data):
     :param weather_data: list of integers
     :return: X axis fitted to the retrieved weather data, to be plotted easily.
     """
-    if len(datetime_list) == len(weather_data):
-        return np.arange(len(datetime_list))
-    else:
+    if len(datetime_list) is not len(weather_data):
         print(f'Length of weather array is {len(weather_data)}, {len(datetime_list)} was expected.'
               f'There have beeen a pb during html parsing.'
               f'X-axis has been modified to fit the data ')
-        return np.arange(len(weather_data))
+
+    return np.arange(len(weather_data))

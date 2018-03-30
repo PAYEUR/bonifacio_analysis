@@ -78,6 +78,9 @@ def test_rain(weather_parser):
 
 
 def test_create_x_abscissa(weather_parser):
+    # ensure that plt(x, weather_data) is always possible
+    # where x = create_x_abscissa()
+    # and weather_data of different length
     datetime_list = [datetime(year=2016, month=11, day=3, hour=i) for i in range(0, 24)]
     weather_data = weather_parser.temp_list
     weather_data2 = weather_data[:-2]
