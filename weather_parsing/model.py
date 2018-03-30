@@ -161,7 +161,7 @@ class WeatherParserManager:
 def create_x_abscissa(datetime_list, weather_data):
     """
     This function checks if len(weather_data) is the same as len(datetime_list) as it supposed to be.
-    If not, raise a information message
+    If not, print an information message
     :param datetime_list: list of datetimes
     :param weather_data: list of integers
     :return: X axis fitted to the retrieved weather data, to be plotted easily.
