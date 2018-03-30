@@ -94,14 +94,15 @@ for ax, ratio, direction in zip((ax1, ax2, ax3),
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     ax.yaxis.set_minor_formatter(FormatStrFormatter('%.1f'))
 
+plot_data = [(ax4, ax5, ax6),
+             ('Wind (km/h)', 'Temp (°C)', 'Rain (mm/h)'),
+             (wind, temp, rain),
+             ('green', 'red', 'blue'),
+             ([0, 90], [0, 30], [0, 15]),
+             ]
 
 # Plotting weather data
-for ax, title, weather_data, color, scale in zip((ax4, ax5, ax6),
-                                                 ('Wind (km/h)', 'Temp (°C)', 'Rain (mm/h)'),
-                                                 (wind, temp, rain),
-                                                 ('green', 'red', 'blue'),
-                                                 ([0, 90], [0, 30], [0, 15])
-                                                 ):
+for ax, title, weather_data, color, scale in zip(plot_data):
     ax.set_ylabel(title)
     # CAUTION: because of unexplained data parsing reasons, len(rain), len(temp) and len(wind)
     #   may not be equal to len(x)
