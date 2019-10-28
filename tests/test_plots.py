@@ -20,7 +20,7 @@ def assert_same_image_as(path_reference):
     plt.savefig(path_tested, format='png')
     img_test = mpimg.imread(path_tested)
     os.remove(path_tested)
-    np.testing.assert_array_equal(img_test, img_reference)
+    np.testing.assert_allclose(img_test, img_reference, rtol=1.02, atol=1.0)
 
 
 def test_log_scale(trace_processor, short_trace, long_trace):
