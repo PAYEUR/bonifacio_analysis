@@ -15,7 +15,7 @@ numpy==1.13.1
 obspy==1.0.3
 py==1.5.2
 pycparser==2.18
-pyOpenSSL==17.2.0
+pyOpenSSL==17.5.0
 pyparsing==2.2.0
 PySocks==1.6.7
 pytest==3.2.5
