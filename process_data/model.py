@@ -89,7 +89,7 @@ class RatioManager:
         self.end_time = end_time
         self.frequencies = self.get_frequencies()
         self.datetime_list = self.get_datetime_list()
-        self.ratio = self.compute_ratio(0.05)
+        self.ratio = self.compute_ratio(1e-7)
 
     # TODO: remove get_frequencies from inside RatioManager
     def get_frequencies(self):
@@ -115,7 +115,7 @@ class RatioManager:
         """
         numerator = get_array(self.sp_cliff_file_path)
         denominator = get_array(self.sp_reference_file_path)
-        den2 = denominator + water_level_ratio*np.mean(denominator)
+        den2 = denominator + water_level_ratio*np.max(denominator)
         return numerator/den2
 
     def remove_noisy_columns(self, noise_level):
