@@ -37,10 +37,12 @@ for direction in ('Z', 'N', 'E'):
                                )
 
     print('filtering ratio')
+
     # replace noisy columns
-    rm.remove_noisy_columns(10)
+    # rm.remove_noisy_columns(10)
+
     # filter final data to improve readability
-    rm.smooth((7, 1))
+    # rm.smooth((7, 1))
 
     ratio_list.append(rm.ratio)
 
@@ -94,16 +96,16 @@ for ax, ratio, direction in zip((ax1, ax2, ax3),
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     ax.yaxis.set_minor_formatter(FormatStrFormatter('%.1f'))
 
-plot_data = [(ax4, ax5, ax6),
-             ('Wind (km/h)', 'Temp (°C)', 'Rain (mm/h)'),
-             (wind, temp, rain),
-             ('green', 'red', 'blue'),
-             ([0, 90], [0, 30], [0, 15]),
-             ]
+plot_data = zip((ax4, ax5, ax6),
+                ('Wind (km/h)', 'Temp (°C)', 'Rain (mm/h)'),
+                (wind, temp, rain),
+                ('green', 'red', 'blue'),
+                ([0, 90], [0, 30], [0, 15]),
+                )
 
 # Plotting weather data
-for ax, title, weather_data, color, scale in zip(plot_data):
-    ax.set_ylabel(title)
+for ax,y_title, weather_data, color, scale in plot_data:
+    ax.set_ylabel(y_title)
     # CAUTION: because of unexplained data parsing reasons, len(rain), len(temp) and len(wind)
     #   may not be equal to len(x)
     # so one need to call create_x_abcissa function
