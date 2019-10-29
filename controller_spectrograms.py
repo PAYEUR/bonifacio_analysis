@@ -13,14 +13,11 @@ from collect_data import model as cd_model
 from process_data import model as pd_model
 
 # local settings
-mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
-data_folders = ['Station-falaise']  # 'Station-reference',
+# mother_repository = "D:/JBP-Preprog-Recherche/Bonifacio_obspy/Bruit-de-fond"
+#data_folders = ['Station-falaise']  # 'Station-reference',
 
-# prod settings on local machine
-# mother_repository = '//SRV51-NETAPP2/Data_RS/Bonifacio/Bonifacio-bdf-definitif'
-
-# prod settings on EraPido
-# mother_repository = '/media/Data_RS/Bonifacio/Bonifacio-bdf-definitif'
+# prod settings on remote server
+mother_repository = '/home/pej1/bonifacio_data'
 
 # data_folders = ['Falaise-nov2016', 'Ref_nov2016',
 #                 'Falaise_dec2016', 'Ref_dec2016',
